@@ -4,6 +4,11 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+mod item;
+mod queue;
+
+use crate::queue::{in_queue_transforms, Queue};
+use crate::item::Item;
 use bevy::prelude::*;
 use bevy_mod_picking::prelude::*;
 
@@ -11,22 +16,18 @@ fn main() {
     App::new()
         .add_plugins((DefaultPlugins, DefaultPickingPlugins))
         .add_systems(Startup, setup)
+        .add_systems(Update, in_queue_transforms)
         .run();
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
-    commands.spawn((
-        SpriteBundle {
-            texture: asset_server.load("icon.png"),
-            ..Default::default()
-        },
-        PickableBundle::default(),
-        On::<Pointer<DragStart>>::target_insert(Pickable::IGNORE), // Disable picking
-        On::<Pointer<DragEnd>>::target_insert(Pickable::default()), // Re-enable picking
-        On::<Pointer<Drag>>::target_component_mut::<Transform>(|drag, transform| {
-            transform.translation.x += drag.delta.x; // Make the square follow the mouse
-            transform.translation.y -= drag.delta.y;
-        }),
-    ));
+    Queue::spawn(&mut commands);
+
+    Item::spawn(&mut commands, &asset_server);
+    Item::spawn(&mut commands, &asset_server);
+    Item::spawn(&mut commands, &asset_server);
+    Item::spawn(&mut commands, &asset_server);
+    Item::spawn(&mut commands, &asset_server);
+    Item::spawn(&mut commands, &asset_server);
 }
