@@ -83,7 +83,7 @@ pub fn stack_items(
     mut items: Query<(&mut Transform, &StackOffset), With<InStack>>,
 ) {
     for (stack, transform) in &stacks {
-        let offset = stack.item_type.dimensions().z;
+        let offset = stack.item_type.stack_dimensions().y;
         for (i, entity) in stack.items.iter().enumerate() {
             let Ok((mut t, x_offset)) = items.get_mut(*entity) else {
                 continue;

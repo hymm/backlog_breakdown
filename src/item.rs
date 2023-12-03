@@ -20,11 +20,10 @@ impl ItemBundle {
         Self {
             sprite_bundle: SpriteBundle {
                 sprite: Sprite {
-                    color: Color::GRAY,
-                    custom_size: Some(item_type.dimensions().yz()),
+                    custom_size: Some(item_type.stack_dimensions()),
                     ..default()
                 },
-                // texture,
+                texture,
                 transform: Transform::from_xyz(0., 0., 1.),
                 ..default()
             },
@@ -52,12 +51,21 @@ pub enum ItemType {
 }
 
 impl ItemType {
-    pub fn dimensions(&self) -> Vec3 {
+    pub fn stack_dimensions(&self) -> Vec2 {
         match self {
-            ItemType::Book => Vec3::new(80., 100., 20.),
-            ItemType::Movie => Vec3::new(60., 100., 15.),
-            ItemType::Game => Vec3::new(50., 100., 10.),
-            ItemType::Comic => Vec3::new(40., 100., 5.),
+            ItemType::Book => Vec2::new(65., 17.),
+            ItemType::Movie => Vec2::new(65., 17.),
+            ItemType::Game => Vec2::new(65., 17.),
+            ItemType::Comic => Vec2::new(65., 17.),
+        }
+    }
+
+    pub fn queue_dimensions(&self) -> Vec2 {
+        match self {
+            ItemType::Book => Vec2::new(45., 60.),
+            ItemType::Movie => Vec2::new(65., 17.),
+            ItemType::Game => Vec2::new(65., 17.),
+            ItemType::Comic => Vec2::new(65., 17.),
         }
     }
 

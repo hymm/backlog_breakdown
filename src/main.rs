@@ -48,7 +48,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ItemType::Book,
     );
 
-    let texture = asset_server.load("icon.png");
+    let texture = asset_server.load("Book1_side.png");
     // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
     // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
     // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
