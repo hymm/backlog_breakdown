@@ -6,15 +6,27 @@
 
 mod item;
 mod queue;
+mod stack;
 
-use crate::item::Item;
+use crate::item::ItemBundle;
 use crate::queue::{in_queue_transforms, Queue};
 use bevy::prelude::*;
+use bevy::window::WindowResolution;
 use bevy_mod_picking::prelude::*;
+use item::ItemType;
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultPickingPlugins))
+        .add_plugins((
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    resolution: WindowResolution::new(640., 360.),
+                    ..default()
+                }),
+                ..default()
+            }),
+            DefaultPickingPlugins,
+        ))
         .add_systems(Startup, setup)
         .add_systems(Update, in_queue_transforms)
         .run();
@@ -22,12 +34,17 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
+    commands.spawn(SpriteBundle {
+        texture: asset_server.load("background.png"),
+        ..default()
+    });
     Queue::spawn(&mut commands);
 
-    Item::spawn(&mut commands, &asset_server);
-    Item::spawn(&mut commands, &asset_server);
-    Item::spawn(&mut commands, &asset_server);
-    Item::spawn(&mut commands, &asset_server);
-    Item::spawn(&mut commands, &asset_server);
-    Item::spawn(&mut commands, &asset_server);
+    let texture = asset_server.load("icon.png");
+    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
 }

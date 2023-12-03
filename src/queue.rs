@@ -18,7 +18,7 @@ impl Queue {
                     custom_size: Some(Vec2::new(300., 50.)),
                     ..default()
                 },
-                transform: Transform::from_xyz(0., -300., 0.),
+                transform: Transform::from_xyz(0., -130., 0.),
                 ..default()
             },
             PickableBundle::default(),
