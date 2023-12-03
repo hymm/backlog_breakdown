@@ -8,12 +8,13 @@ mod item;
 mod queue;
 mod stack;
 
-use crate::item::ItemBundle;
 use crate::queue::{in_queue_transforms, Queue};
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_mod_picking::prelude::*;
-use item::ItemType;
+use item::{ItemHandles, ItemType};
+use stack::{stack_items, Stack, SpawnOnStack};
+use bevy_rand::prelude::*;
 
 fn main() {
     App::new()
@@ -26,9 +27,10 @@ fn main() {
                 ..default()
             }),
             DefaultPickingPlugins,
+            EntropyPlugin::<ChaCha8Rng>::default(),
         ))
         .add_systems(Startup, setup)
-        .add_systems(Update, in_queue_transforms)
+        .add_systems(Update, (in_queue_transforms, stack_items))
         .run();
 }
 
@@ -40,11 +42,23 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
     Queue::spawn(&mut commands);
 
+    let id = Stack::spawn(
+        &mut commands,
+        Transform::from_xyz(0., 0., 0.),
+        ItemType::Book,
+    );
+
     let texture = asset_server.load("icon.png");
-    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
+    commands.insert_resource(ItemHandles { handle: texture });
+
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
 }
