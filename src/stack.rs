@@ -6,7 +6,7 @@ use bevy_rand::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
-    item::{ItemBundle, ItemHandles, ItemType, ItemDragging},
+    item::{ItemBundle, ItemDragging, ItemHandles, ItemType},
     queue::InQueue,
 };
 
@@ -28,12 +28,7 @@ impl Stack {
         commands
             .spawn((
                 // TODO: figure out why I had to spawn a sprite to keep the text from getting cut off
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::RED, //Color::rgba_u8(0, 0, 0, 0),
-                        custom_size: Some(Vec2::new(5., 5.)),
-                        ..default()
-                    },
+                SpatialBundle {
                     transform,
                     ..default()
                 },
@@ -42,7 +37,7 @@ impl Stack {
             .with_children(|children| {
                 children.spawn(Text2dBundle {
                     text: Text::from_section(item_type.label(), default()),
-                    transform: Transform::from_xyz(0., -20., 0.),
+                    transform: Transform::from_xyz(0., -20., 0.1),
                     ..default()
                 });
             })
