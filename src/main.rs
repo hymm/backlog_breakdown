@@ -12,9 +12,9 @@ use crate::queue::{in_queue_transforms, Queue};
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_mod_picking::prelude::*;
-use item::{ItemHandles, ItemType, ItemHandle};
-use stack::{stack_items, Stack, SpawnOnStack, restack};
 use bevy_rand::prelude::*;
+use item::{ItemHandle, ItemHandles, ItemType};
+use stack::{restack, stack_items, SpawnOnStack, Stack};
 
 fn main() {
     App::new()
@@ -48,10 +48,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ItemType::Book,
     );
 
-    commands.insert_resource(ItemHandles { handle: ItemHandle {
-        stack_handle: asset_server.load("Book1_side.png"),
-        queue_handle: asset_server.load("Book1_cover.png"),
-    } });
+    commands.insert_resource(ItemHandles {
+        handle: ItemHandle {
+            stack_handle: asset_server.load("Book1_side.png"),
+            queue_handle: asset_server.load("Book1_cover.png"),
+        },
+    });
 
     commands.entity(id).add(SpawnOnStack);
     commands.entity(id).add(SpawnOnStack);
