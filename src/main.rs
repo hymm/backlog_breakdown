@@ -7,8 +7,8 @@
 mod item;
 mod queue;
 
-use crate::queue::{in_queue_transforms, Queue};
 use crate::item::Item;
+use crate::queue::{in_queue_transforms, Queue};
 use bevy::prelude::*;
 use bevy_mod_picking::prelude::*;
 

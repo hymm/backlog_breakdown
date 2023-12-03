@@ -1,4 +1,4 @@
-use bevy::{prelude::*, ecs::system::EntityCommand};
+use bevy::{ecs::system::EntityCommand, prelude::*};
 use bevy_mod_picking::prelude::*;
 
 #[derive(Component)]
@@ -11,8 +11,7 @@ pub struct Queue {
 
 impl Queue {
     pub fn spawn(commands: &mut Commands) {
-        commands
-        .spawn((
+        commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
                     color: Color::BLUE,
