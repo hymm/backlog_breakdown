@@ -6,7 +6,7 @@ use bevy_rand::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
-    item::{ItemBundle, ItemHandles, ItemType},
+    item::{ItemBundle, ItemHandles, ItemType, ItemDragging},
     queue::InQueue,
 };
 
@@ -88,7 +88,6 @@ impl EntityCommand for SpawnOnStack {
 pub struct PushStack;
 impl EntityCommand for PushStack {
     fn apply(self, id: Entity, world: &mut World) {
-      
         let handles = world.resource::<ItemHandles>();
         let new_handle = handles.handle.stack_handle.clone();
         let mut e = world.entity_mut(id);
@@ -165,7 +164,18 @@ impl FindStack for QueryState<&mut Stack> {
 }
 
 /// if an item is not in queue or stack, put it back in the stack
-pub fn restack(mut commands: Commands, q: Query<Entity, (With<ItemType>, Without<InStack>, Without<InQueue>)>) {
+pub fn restack(
+    mut commands: Commands,
+    q: Query<
+        Entity,
+        (
+            With<ItemType>,
+            Without<InStack>,
+            Without<InQueue>,
+            Without<ItemDragging>,
+        ),
+    >,
+) {
     for e in &q {
         commands.entity(e).add(PushStack);
     }

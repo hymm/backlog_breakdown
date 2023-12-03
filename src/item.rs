@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_mod_picking::prelude::*;
 
-use crate::stack::{InStack, StackOffset, RemoveFromStack};
+use crate::stack::{InStack, RemoveFromStack, StackOffset};
 
 #[derive(Bundle)]
 pub struct ItemBundle {
@@ -34,10 +34,15 @@ impl ItemBundle {
             on_drag_start: On::<Pointer<DragStart>>::commands_mut(|evt, commands| {
                 commands
                     .entity(evt.target)
-                    .insert(Pickable::IGNORE)
+                    .insert((Pickable::IGNORE, ItemDragging))
                     .add(RemoveFromStack);
             }), // Disable picking
-            on_drag_end: On::<Pointer<DragEnd>>::target_insert(Pickable::default()), // Re-enable picking
+            on_drag_end: On::<Pointer<DragEnd>>::commands_mut(|evt, commands| {
+                commands
+                    .entity(evt.target)
+                    .insert(Pickable::default())
+                    .remove::<ItemDragging>();
+            }),
             on_drag: On::<Pointer<Drag>>::target_component_mut::<Transform>(|drag, transform| {
                 transform.translation.x += drag.delta.x; // Make the square follow the mouse
                 transform.translation.y -= drag.delta.y;
@@ -93,3 +98,6 @@ pub struct ItemHandle {
     pub stack_handle: Handle<Image>,
     pub queue_handle: Handle<Image>,
 }
+
+#[derive(Component)]
+pub struct ItemDragging;
