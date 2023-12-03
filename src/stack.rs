@@ -5,7 +5,10 @@ use bevy::{
 use bevy_rand::prelude::*;
 use rand_core::RngCore;
 
-use crate::item::{ItemBundle, ItemHandles, ItemType};
+use crate::{
+    item::{ItemBundle, ItemHandles, ItemType},
+    queue::InQueue,
+};
 
 #[derive(Component, Default)]
 pub struct Stack {
@@ -82,6 +85,25 @@ impl EntityCommand for SpawnOnStack {
     }
 }
 
+pub struct PushStack;
+impl EntityCommand for PushStack {
+    fn apply(self, id: Entity, world: &mut World) {
+      
+        let handles = world.resource::<ItemHandles>();
+        let new_handle = handles.handle.stack_handle.clone();
+        let mut e = world.entity_mut(id);
+        e.insert(InStack);
+        *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
+
+        let t = *e.get::<ItemType>().unwrap();
+        let mut query = world.query::<&mut Stack>();
+        let Some(mut stack) = query.find_stack(world, t) else {
+            return;
+        };
+        stack.items.push(id);
+    }
+}
+
 pub fn stack_items(
     stacks: Query<(&Stack, &GlobalTransform), Changed<Stack>>,
     mut items: Query<(&mut Transform, &StackOffset), With<InStack>>,
@@ -107,13 +129,14 @@ impl EntityCommand for RemoveFromStack {
         }
         let t = *e.get::<ItemType>().unwrap();
         let mut query = world.query::<&mut Stack>();
-        let Some(mut stack) = query.find_stack(world, t) else { return; };
+        let Some(mut stack) = query.find_stack(world, t) else {
+            return;
+        };
 
         let i = stack.items.iter().position(|e| *e == id).unwrap();
         stack.items.remove(i);
 
         let handles = world.resource::<ItemHandles>();
-
         let new_handle = handles.handle.queue_handle.clone();
         let mut e = world.entity_mut(id);
         e.remove::<InStack>();
@@ -123,11 +146,27 @@ impl EntityCommand for RemoveFromStack {
 }
 
 trait FindStack {
-    fn find_stack<'a>(&'a mut self, world: &'a mut World, item_type: ItemType) -> Option<Mut<'_, Stack>>;
+    fn find_stack<'a>(
+        &'a mut self,
+        world: &'a mut World,
+        item_type: ItemType,
+    ) -> Option<Mut<'_, Stack>>;
 }
 
 impl FindStack for QueryState<&mut Stack> {
-    fn find_stack<'a>(&'a mut self, world: &'a mut World, item_type: ItemType) -> Option<Mut<'_, Stack>> {
-        self.iter_mut(world).find(|stack| stack.item_type == item_type)
+    fn find_stack<'a>(
+        &'a mut self,
+        world: &'a mut World,
+        item_type: ItemType,
+    ) -> Option<Mut<'_, Stack>> {
+        self.iter_mut(world)
+            .find(|stack| stack.item_type == item_type)
+    }
+}
+
+/// if an item is not in queue or stack, put it back in the stack
+pub fn restack(mut commands: Commands, q: Query<Entity, (With<ItemType>, Without<InStack>, Without<InQueue>)>) {
+    for e in &q {
+        commands.entity(e).add(PushStack);
     }
 }
