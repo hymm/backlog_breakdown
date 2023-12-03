@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_mod_picking::prelude::*;
 
-use crate::stack::{InStack, StackOffset};
+use crate::stack::{InStack, StackOffset, RemoveFromStack};
 
 #[derive(Bundle)]
 pub struct ItemBundle {
@@ -20,7 +20,7 @@ impl ItemBundle {
         Self {
             sprite_bundle: SpriteBundle {
                 sprite: Sprite {
-                    custom_size: Some(item_type.stack_dimensions()),
+                    // custom_size: Some(item_type.stack_dimensions()),
                     ..default()
                 },
                 texture,
@@ -31,7 +31,12 @@ impl ItemBundle {
             in_stack: InStack,
             stack_offset: StackOffset(offset),
             pickable_bundle: PickableBundle::default(),
-            on_drag_start: On::<Pointer<DragStart>>::target_insert(Pickable::IGNORE), // Disable picking
+            on_drag_start: On::<Pointer<DragStart>>::commands_mut(|evt, commands| {
+                commands
+                    .entity(evt.target)
+                    .insert(Pickable::IGNORE)
+                    .add(RemoveFromStack);
+            }), // Disable picking
             on_drag_end: On::<Pointer<DragEnd>>::target_insert(Pickable::default()), // Re-enable picking
             on_drag: On::<Pointer<Drag>>::target_component_mut::<Transform>(|drag, transform| {
                 transform.translation.x += drag.delta.x; // Make the square follow the mouse
@@ -41,7 +46,7 @@ impl ItemBundle {
     }
 }
 
-#[derive(Component, Default, Clone, Copy)]
+#[derive(Component, Default, Clone, Copy, PartialEq)]
 pub enum ItemType {
     #[default]
     Book,
@@ -64,7 +69,7 @@ impl ItemType {
         match self {
             ItemType::Book => Vec2::new(45., 60.),
             ItemType::Movie => Vec2::new(65., 17.),
-            ItemType::Game => Vec2::new(65., 17.),
+            ItemType::Game => Vec2::new(34., 55.),
             ItemType::Comic => Vec2::new(65., 17.),
         }
     }
@@ -81,5 +86,10 @@ impl ItemType {
 
 #[derive(Resource)]
 pub struct ItemHandles {
-    pub handle: Handle<Image>,
+    pub handle: ItemHandle,
+}
+
+pub struct ItemHandle {
+    pub stack_handle: Handle<Image>,
+    pub queue_handle: Handle<Image>,
 }

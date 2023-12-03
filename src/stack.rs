@@ -71,7 +71,11 @@ impl EntityCommand for SpawnOnStack {
 
         let offset = ((rng.next_u32() as f32 / u32::MAX as f32) - 0.5) * 7.;
         let new_item = commands
-            .spawn(ItemBundle::new(stack.item_type, handles.handle.clone(), offset))
+            .spawn(ItemBundle::new(
+                stack.item_type,
+                handles.handle.stack_handle.clone(),
+                offset,
+            ))
             .id();
         stack.items.push(new_item);
         system_state.apply(world);
@@ -91,5 +95,39 @@ pub fn stack_items(
             t.translation =
                 transform.translation() + Vec2::new(x_offset.0, i as f32 * offset).extend(0.);
         }
+    }
+}
+
+pub struct RemoveFromStack;
+impl EntityCommand for RemoveFromStack {
+    fn apply(self, id: Entity, world: &mut World) {
+        let e = world.entity(id);
+        if !e.contains::<InStack>() {
+            return;
+        }
+        let t = *e.get::<ItemType>().unwrap();
+        let mut query = world.query::<&mut Stack>();
+        let Some(mut stack) = query.find_stack(world, t) else { return; };
+
+        let i = stack.items.iter().position(|e| *e == id).unwrap();
+        stack.items.remove(i);
+
+        let handles = world.resource::<ItemHandles>();
+
+        let new_handle = handles.handle.queue_handle.clone();
+        let mut e = world.entity_mut(id);
+        e.remove::<InStack>();
+        let mut handle = e.get_mut::<Handle<Image>>().unwrap();
+        *handle = new_handle;
+    }
+}
+
+trait FindStack {
+    fn find_stack<'a>(&'a mut self, world: &'a mut World, item_type: ItemType) -> Option<Mut<'_, Stack>>;
+}
+
+impl FindStack for QueryState<&mut Stack> {
+    fn find_stack<'a>(&'a mut self, world: &'a mut World, item_type: ItemType) -> Option<Mut<'_, Stack>> {
+        self.iter_mut(world).find(|stack| stack.item_type == item_type)
     }
 }

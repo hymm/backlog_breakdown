@@ -12,7 +12,7 @@ use crate::queue::{in_queue_transforms, Queue};
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_mod_picking::prelude::*;
-use item::{ItemHandles, ItemType};
+use item::{ItemHandles, ItemType, ItemHandle};
 use stack::{stack_items, Stack, SpawnOnStack};
 use bevy_rand::prelude::*;
 
@@ -48,14 +48,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ItemType::Book,
     );
 
-    let texture = asset_server.load("Book1_side.png");
-    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    // commands.spawn(ItemBundle::new(ItemType::Book, texture.clone()));
-    commands.insert_resource(ItemHandles { handle: texture });
+    commands.insert_resource(ItemHandles { handle: ItemHandle {
+        stack_handle: asset_server.load("Book1_side.png"),
+        queue_handle: asset_server.load("Book1_cover.png"),
+    } });
 
     commands.entity(id).add(SpawnOnStack);
     commands.entity(id).add(SpawnOnStack);
