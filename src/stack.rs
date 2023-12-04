@@ -7,7 +7,7 @@ use rand_core::RngCore;
 
 use crate::{
     item::{ItemBundle, ItemDragging, ItemHandles, ItemType},
-    queue::InQueue,
+    queue::{InQueue, ActiveItem},
 };
 
 #[derive(Component, Default)]
@@ -168,6 +168,7 @@ pub fn restack(
             Without<InStack>,
             Without<InQueue>,
             Without<ItemDragging>,
+            Without<ActiveItem>,
         ),
     >,
 ) {

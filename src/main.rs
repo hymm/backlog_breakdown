@@ -14,6 +14,7 @@ use bevy::window::WindowResolution;
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
 use item::{ItemHandle, ItemHandles, ItemType};
+use queue::{check_active, consume_active};
 use stack::{restack, stack_items, SpawnOnStack, Stack};
 
 fn main() {
@@ -30,7 +31,16 @@ fn main() {
             EntropyPlugin::<ChaCha8Rng>::default(),
         ))
         .add_systems(Startup, setup)
-        .add_systems(Update, (in_queue_transforms, stack_items, restack))
+        .add_systems(
+            Update,
+            (
+                in_queue_transforms,
+                stack_items,
+                restack,
+                check_active,
+                consume_active,
+            ),
+        )
         .run();
 }
 

@@ -1,5 +1,10 @@
-use bevy::{ecs::system::EntityCommand, prelude::*};
+use bevy::{
+    ecs::system::{Command, EntityCommand},
+    prelude::*,
+};
 use bevy_mod_picking::prelude::*;
+
+use crate::item::ItemType;
 
 #[derive(Component)]
 pub struct InQueue;
@@ -27,6 +32,8 @@ impl Queue {
                 commands.entity(event.dropped).add(AddToQueue);
             }),
         ));
+
+        ConsumeActive::spawn(commands);
     }
 }
 
@@ -45,7 +52,7 @@ pub fn in_queue_transforms(
     mut items: Query<&mut Transform, With<InQueue>>,
     queue: Query<(&Queue, &GlobalTransform)>,
 ) {
-    const FIRST_ITEM_OFFSET: Vec3 = Vec3::new(-125.0, 0.0, 1.0);
+    const FIRST_ITEM_OFFSET: Vec3 = Vec3::new(125.0, 0.0, 1.0);
     let Ok((queue, queue_transform)) = queue.get_single() else {
         return;
     };
@@ -55,6 +62,75 @@ pub fn in_queue_transforms(
             continue;
         };
         transform.translation =
-            queue_transform.translation() + FIRST_ITEM_OFFSET + Vec3::X * (index * 50) as f32;
+            queue_transform.translation() + FIRST_ITEM_OFFSET - Vec3::X * (index * 50) as f32;
+    }
+}
+
+/// visual for active item
+#[derive(Component)]
+pub struct ConsumeActive;
+
+impl ConsumeActive {
+    pub fn spawn(commands: &mut Commands) {
+        commands.spawn((
+            ConsumeActive,
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::BLUE,
+                    custom_size: Some(Vec2::new(50., 50.)),
+                    ..default()
+                },
+                transform: Transform::from_xyz(200., -130., 0.),
+                ..default()
+            },
+        ));
+    }
+}
+
+/// Marker component for the active item.
+#[derive(Component)]
+pub struct ActiveItem(pub Timer);
+
+struct PopQueue;
+impl Command for PopQueue {
+    fn apply(self, world: &mut World) {
+        let mut queues = world.query::<&mut Queue>();
+        let Ok(mut queue) = queues.get_single_mut(world) else {
+            return;
+        };
+        let Some(active_item) = queue.items.pop() else {
+            return;
+        };
+
+        let mut active_slot = world.query_filtered::<&GlobalTransform, With<ConsumeActive>>();
+        let active_slot_translation = active_slot.single(world).translation();
+
+        let mut e = world.entity_mut(active_item);
+        let item_type = *e.get::<ItemType>().unwrap();
+        let mut transform = e.get_mut::<Transform>().unwrap();
+        transform.translation = active_slot_translation;
+        e.remove::<InQueue>().insert(ActiveItem(Timer::new(
+            item_type.comsume_time(),
+            TimerMode::Once,
+        )));
+    }
+}
+
+pub fn check_active(mut commands: Commands, active_query: Query<(), With<ActiveItem>>) {
+    if active_query.is_empty() {
+        commands.add(PopQueue);
+    }
+}
+
+pub fn consume_active(
+    mut commands: Commands,
+    mut active_query: Query<(Entity, &mut ActiveItem)>,
+    time: Res<Time>,
+) {
+    let Ok((e, mut timer)) = active_query.get_single_mut() else {
+        return;
+    };
+    if timer.0.tick(time.delta()).just_finished() {
+        commands.entity(e).despawn();
     }
 }

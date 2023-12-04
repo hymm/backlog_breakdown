@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_mod_picking::prelude::*;
 
@@ -85,6 +87,15 @@ impl ItemType {
             ItemType::Movie => "Movies",
             ItemType::Game => "Games",
             ItemType::Comic => "Comics",
+        }
+    }
+
+    pub fn comsume_time(&self) -> Duration {
+        match self {
+            ItemType::Book => Duration::from_secs_f32(5.),
+            ItemType::Movie => Duration::from_secs_f32(2.),
+            ItemType::Game => Duration::from_secs_f32(10.),
+            ItemType::Comic => Duration::from_secs_f32(1.),
         }
     }
 }
