@@ -55,18 +55,66 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
     Queue::spawn(&mut commands);
 
-    let id = Stack::spawn(
-        &mut commands,
-        Transform::from_xyz(0., 0., 0.),
-        ItemType::Book,
-    );
-
     commands.insert_resource(ItemHandles {
-        handle: ItemHandle {
+        book: ItemHandle {
             stack_handle: asset_server.load("Book1_side.png"),
             queue_handle: asset_server.load("Book1_cover.png"),
         },
+        movie: ItemHandle {
+            stack_handle: asset_server.load("Movie1_side.png"),
+            queue_handle: asset_server.load("Movie1_cover.png"),
+        },
+        comic: ItemHandle {
+            stack_handle: asset_server.load("Comic1_side.png"),
+            queue_handle: asset_server.load("Comic1_cover.png"),
+        },
+        game: ItemHandle {
+            stack_handle: asset_server.load("Game1_side.png"),
+            queue_handle: asset_server.load("Game1_cover.png"),
+        },
     });
+
+
+    
+    let id = Stack::spawn(
+        &mut commands,
+        Transform::from_xyz(-150., 0., 0.),
+        ItemType::Book,
+    );
+
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+
+    let id = Stack::spawn(
+        &mut commands,
+        Transform::from_xyz(-50., 0., 0.),
+        ItemType::Movie,
+    );
+
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+    
+    let id = Stack::spawn(
+        &mut commands,
+        Transform::from_xyz(50., 0., 0.),
+        ItemType::Game,
+    );
+
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+    commands.entity(id).add(SpawnOnStack);
+
+    
+    let id = Stack::spawn(
+        &mut commands,
+        Transform::from_xyz(150., 0., 0.),
+        ItemType::Comic,
+    );
 
     commands.entity(id).add(SpawnOnStack);
     commands.entity(id).add(SpawnOnStack);

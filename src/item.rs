@@ -66,20 +66,20 @@ impl ItemType {
     pub fn stack_dimensions(&self) -> Vec2 {
         match self {
             ItemType::Book => Vec2::new(65., 17.),
-            ItemType::Movie => Vec2::new(65., 17.),
-            ItemType::Game => Vec2::new(65., 17.),
-            ItemType::Comic => Vec2::new(65., 17.),
+            ItemType::Movie => Vec2::new(65., 10.),
+            ItemType::Game => Vec2::new(65., 12.),
+            ItemType::Comic => Vec2::new(65., 8.),
         }
     }
 
-    pub fn queue_dimensions(&self) -> Vec2 {
-        match self {
-            ItemType::Book => Vec2::new(45., 60.),
-            ItemType::Movie => Vec2::new(65., 17.),
-            ItemType::Game => Vec2::new(34., 55.),
-            ItemType::Comic => Vec2::new(65., 17.),
-        }
-    }
+    // pub fn queue_dimensions(&self) -> Vec2 {
+    //     match self {
+    //         ItemType::Book => Vec2::new(45., 60.),
+    //         ItemType::Movie => Vec2::new(37., 49.),
+    //         ItemType::Game => Vec2::new(34., 55.),
+    //         ItemType::Comic => Vec2::new(33., 43.),
+    //     }
+    // }
 
     pub fn label(&self) -> &'static str {
         match self {
@@ -90,7 +90,7 @@ impl ItemType {
         }
     }
 
-    pub fn comsume_time(&self) -> Duration {
+    pub fn consume_time(&self) -> Duration {
         match self {
             ItemType::Book => Duration::from_secs_f32(5.),
             ItemType::Movie => Duration::from_secs_f32(2.),
@@ -98,11 +98,32 @@ impl ItemType {
             ItemType::Comic => Duration::from_secs_f32(1.),
         }
     }
+
+    pub fn get_stack_handle(&self, handles: &ItemHandles) -> Handle<Image> {
+        match self {
+            ItemType::Book => handles.book.stack_handle.clone(),
+            ItemType::Movie => handles.movie.stack_handle.clone(),
+            ItemType::Game => handles.game.stack_handle.clone(),
+            ItemType::Comic => handles.comic.stack_handle.clone(),
+        }
+    }
+
+    pub fn get_queue_handle(&self, handles: &ItemHandles) -> Handle<Image> {
+        match self {
+            ItemType::Book => handles.book.queue_handle.clone(),
+            ItemType::Movie => handles.movie.queue_handle.clone(),
+            ItemType::Game => handles.game.queue_handle.clone(),
+            ItemType::Comic => handles.comic.queue_handle.clone(),
+        }
+    }
 }
 
 #[derive(Resource)]
 pub struct ItemHandles {
-    pub handle: ItemHandle,
+    pub book: ItemHandle,
+    pub movie: ItemHandle,
+    pub game: ItemHandle,
+    pub comic: ItemHandle,
 }
 
 pub struct ItemHandle {

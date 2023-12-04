@@ -113,7 +113,7 @@ impl Command for PopQueue {
         let mut transform = e.get_mut::<Transform>().unwrap();
         transform.translation = active_slot_translation;
         e.remove::<InQueue>().insert(ActiveItem(Timer::new(
-            item_type.comsume_time(),
+            item_type.consume_time(),
             TimerMode::Once,
         )));
     }

@@ -71,7 +71,7 @@ impl EntityCommand for SpawnOnStack {
         let new_item = commands
             .spawn(ItemBundle::new(
                 stack.item_type,
-                handles.handle.stack_handle.clone(),
+                stack.item_type.get_stack_handle(&handles),
                 offset,
             ))
             .id();
@@ -83,13 +83,14 @@ impl EntityCommand for SpawnOnStack {
 pub struct PushStack;
 impl EntityCommand for PushStack {
     fn apply(self, id: Entity, world: &mut World) {
+        let t = *world.entity(id).get::<ItemType>().unwrap();
+
         let handles = world.resource::<ItemHandles>();
-        let new_handle = handles.handle.stack_handle.clone();
+        let new_handle = t.get_stack_handle(handles);
         let mut e = world.entity_mut(id);
         e.insert(InStack);
         *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
 
-        let t = *e.get::<ItemType>().unwrap();
         let mut query = world.query::<&mut Stack>();
         let Some(mut stack) = query.find_stack(world, t) else {
             return;
@@ -131,7 +132,7 @@ impl EntityCommand for RemoveFromStack {
         stack.items.remove(i);
 
         let handles = world.resource::<ItemHandles>();
-        let new_handle = handles.handle.queue_handle.clone();
+        let new_handle = t.get_queue_handle(handles);
         let mut e = world.entity_mut(id);
         e.remove::<InStack>();
         let mut handle = e.get_mut::<Handle<Image>>().unwrap();
