@@ -13,8 +13,9 @@ use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
+use bevy_vector_shapes::Shape2dPlugin;
 use item::{ItemHandle, ItemHandles, ItemType};
-use queue::{check_active, consume_active};
+use queue::{check_active, consume_active, draw_timer};
 use stack::{restack, stack_items, SpawnOnStack, Stack};
 
 fn main() {
@@ -29,6 +30,7 @@ fn main() {
             }),
             DefaultPickingPlugins,
             EntropyPlugin::<ChaCha8Rng>::default(),
+            Shape2dPlugin::default(),
         ))
         .add_systems(Startup, setup)
         .add_systems(
@@ -39,6 +41,7 @@ fn main() {
                 restack,
                 check_active,
                 consume_active,
+                draw_timer,
             ),
         )
         .run();

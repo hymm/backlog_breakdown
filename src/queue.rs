@@ -1,8 +1,11 @@
+use std::f32::consts::PI;
+
 use bevy::{
     ecs::system::{Command, EntityCommand},
     prelude::*,
 };
 use bevy_mod_picking::prelude::*;
+use bevy_vector_shapes::prelude::*;
 
 use crate::item::ItemType;
 
@@ -133,4 +136,26 @@ pub fn consume_active(
     if timer.0.tick(time.delta()).just_finished() {
         commands.entity(e).despawn();
     }
+}
+
+pub fn draw_timer(
+    mut painter: ShapePainter,
+    active_query: Query<&mut ActiveItem>,
+    active_slot: Query<&GlobalTransform, With<ConsumeActive>>,
+) {
+    let Ok(timer) = active_query.get_single() else {
+        return;
+    };
+    let Ok(transform) = active_slot.get_single() else {
+        return;
+    };
+
+    let fraction_left = timer.0.elapsed_secs() / timer.0.duration().as_secs_f32();
+
+    painter.translate(transform.translation().xy().extend(3.));
+    painter.thickness = 0.5;
+    painter.hollow = false;
+    painter.color = Color::GREEN;
+    painter.cap = Cap::None;
+    painter.arc(20., 0., 2. * PI * fraction_left);
 }

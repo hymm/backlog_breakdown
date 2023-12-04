@@ -7,7 +7,7 @@ use rand_core::RngCore;
 
 use crate::{
     item::{ItemBundle, ItemDragging, ItemHandles, ItemType},
-    queue::{InQueue, ActiveItem},
+    queue::{ActiveItem, InQueue},
 };
 
 #[derive(Component, Default)]
