@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, collections::VecDeque};
 
 use bevy::{
     ecs::system::{Command, EntityCommand},
@@ -14,7 +14,7 @@ pub struct InQueue;
 
 #[derive(Component, Default)]
 pub struct Queue {
-    items: Vec<Entity>,
+    items: VecDeque<Entity>,
 }
 
 impl Queue {
@@ -45,7 +45,7 @@ impl EntityCommand for AddToQueue {
     fn apply(self, id: Entity, world: &mut World) {
         let mut queue = world.query::<&mut Queue>();
         let mut queue = queue.single_mut(world);
-        queue.items.push(id);
+        queue.items.push_back(id);
 
         world.entity_mut(id).insert((InQueue, Pickable::IGNORE));
     }
@@ -101,7 +101,7 @@ impl Command for PopQueue {
         let Ok(mut queue) = queues.get_single_mut(world) else {
             return;
         };
-        let Some(active_item) = queue.items.pop() else {
+        let Some(active_item) = queue.items.pop_front() else {
             return;
         };
 
