@@ -6,8 +6,8 @@
 
 mod item;
 mod queue;
-mod stack;
 mod spawning;
+mod stack;
 
 use crate::queue::{in_queue_transforms, Queue};
 use bevy::prelude::*;
@@ -18,7 +18,7 @@ use bevy_vector_shapes::Shape2dPlugin;
 use item::{ItemHandle, ItemHandles, ItemType};
 use queue::{check_active, consume_active, draw_timer};
 use spawning::SpawningPlugin;
-use stack::{restack, stack_items, Stack, SpawnOn};
+use stack::{restack, stack_items, SpawnOn, Stack};
 
 fn main() {
     App::new()
@@ -33,7 +33,7 @@ fn main() {
             DefaultPickingPlugins, // .build().disable::<DebugPickingPlugin>(),
             EntropyPlugin::<ChaCha8Rng>::default(),
             Shape2dPlugin::default(),
-            SpawningPlugin
+            SpawningPlugin,
         ))
         .add_systems(Startup, setup)
         .add_systems(
@@ -52,10 +52,13 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
-    commands.spawn(SpriteBundle {
-        texture: asset_server.load("background.png"),
-        ..default()
-    });
+    commands.spawn((
+        SpriteBundle {
+            texture: asset_server.load("background.png"),
+            ..default()
+        },
+        Pickable::IGNORE,
+    ));
     Queue::spawn(&mut commands);
 
     commands.insert_resource(ItemHandles {
@@ -77,22 +80,21 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
     });
 
-
     Stack::spawn_stacks(&mut commands);
 
     for _ in 0..3 {
-        commands.add(SpawnOn(ItemType::Book));    
+        commands.add(SpawnOn(ItemType::Book));
     }
 
     for _ in 0..10 {
-        commands.add(SpawnOn(ItemType::Comic));    
+        commands.add(SpawnOn(ItemType::Comic));
     }
-    
+
     for _ in 0..8 {
-        commands.add(SpawnOn(ItemType::Game));    
+        commands.add(SpawnOn(ItemType::Game));
     }
-    
+
     for _ in 0..3 {
-        commands.add(SpawnOn(ItemType::Movie));    
+        commands.add(SpawnOn(ItemType::Movie));
     }
 }
