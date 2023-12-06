@@ -75,10 +75,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 
 
-    
+    let stack_y = -38.;
     let id = Stack::spawn(
         &mut commands,
-        Transform::from_xyz(-150., 0., 0.),
+        Transform::from_xyz(-150., stack_y, 0.),
         ItemType::Book,
     );
 
@@ -89,7 +89,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let id = Stack::spawn(
         &mut commands,
-        Transform::from_xyz(-50., 0., 0.),
+        Transform::from_xyz(-50., stack_y, 0.),
         ItemType::Movie,
     );
 
@@ -100,7 +100,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     
     let id = Stack::spawn(
         &mut commands,
-        Transform::from_xyz(50., 0., 0.),
+        Transform::from_xyz(50., stack_y, 0.),
         ItemType::Game,
     );
 
@@ -112,7 +112,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     
     let id = Stack::spawn(
         &mut commands,
-        Transform::from_xyz(150., 0., 0.),
+        Transform::from_xyz(150., stack_y, 0.),
         ItemType::Comic,
     );
 

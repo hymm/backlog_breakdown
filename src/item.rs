@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::Anchor};
 use bevy_mod_picking::prelude::*;
 
 use crate::stack::{InStack, RemoveFromStack, StackOffset};
@@ -22,6 +22,7 @@ impl ItemBundle {
         Self {
             sprite_bundle: SpriteBundle {
                 sprite: Sprite {
+                    anchor: Anchor::BottomCenter,
                     // custom_size: Some(item_type.stack_dimensions()),
                     ..default()
                 },

@@ -1,6 +1,7 @@
 use bevy::{
     ecs::system::{EntityCommand, SystemState},
     prelude::*,
+    sprite::Anchor,
 };
 use bevy_rand::prelude::*;
 use rand_core::RngCore;
@@ -90,6 +91,7 @@ impl EntityCommand for PushStack {
         let mut e = world.entity_mut(id);
         e.insert(InStack);
         *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
+        e.get_mut::<Sprite>().unwrap().anchor = Anchor::BottomCenter;
 
         let mut query = world.query::<&mut Stack>();
         let Some(mut stack) = query.find_stack(world, t) else {
@@ -135,8 +137,8 @@ impl EntityCommand for RemoveFromStack {
         let new_handle = t.get_queue_handle(handles);
         let mut e = world.entity_mut(id);
         e.remove::<InStack>();
-        let mut handle = e.get_mut::<Handle<Image>>().unwrap();
-        *handle = new_handle;
+        *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
+        e.get_mut::<Sprite>().unwrap().anchor = Anchor::Center;
     }
 }
 
