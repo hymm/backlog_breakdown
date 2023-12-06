@@ -16,7 +16,7 @@ use bevy_rand::prelude::*;
 use bevy_vector_shapes::Shape2dPlugin;
 use item::{ItemHandle, ItemHandles, ItemType};
 use queue::{check_active, consume_active, draw_timer};
-use stack::{restack, stack_items, SpawnOnStack, Stack};
+use stack::{restack, stack_items, Stack, SpawnOn};
 
 fn main() {
     App::new()
@@ -75,49 +75,21 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 
 
-    let stack_y = -38.;
-    let id = Stack::spawn(
-        &mut commands,
-        Transform::from_xyz(-150., stack_y, 0.),
-        ItemType::Book,
-    );
+    Stack::spawn_stacks(&mut commands);
 
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
+    for _ in 0..3 {
+        commands.add(SpawnOn(ItemType::Book));    
+    }
 
-    let id = Stack::spawn(
-        &mut commands,
-        Transform::from_xyz(-50., stack_y, 0.),
-        ItemType::Movie,
-    );
-
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
+    for _ in 0..10 {
+        commands.add(SpawnOn(ItemType::Comic));    
+    }
     
-    let id = Stack::spawn(
-        &mut commands,
-        Transform::from_xyz(50., stack_y, 0.),
-        ItemType::Game,
-    );
-
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
-
+    for _ in 0..8 {
+        commands.add(SpawnOn(ItemType::Game));    
+    }
     
-    let id = Stack::spawn(
-        &mut commands,
-        Transform::from_xyz(150., stack_y, 0.),
-        ItemType::Comic,
-    );
-
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
-    commands.entity(id).add(SpawnOnStack);
+    for _ in 0..3 {
+        commands.add(SpawnOn(ItemType::Movie));    
+    }
 }

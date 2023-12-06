@@ -1,5 +1,5 @@
 use bevy::{
-    ecs::system::{EntityCommand, SystemState},
+    ecs::system::{Command, EntityCommand, SystemState},
     prelude::*,
     sprite::Anchor,
 };
@@ -10,6 +10,14 @@ use crate::{
     item::{ItemBundle, ItemDragging, ItemHandles, ItemType},
     queue::{ActiveItem, InQueue},
 };
+
+#[derive(Resource)]
+struct Stacks {
+    pub book_id: Entity,
+    pub movie_id: Entity,
+    pub game_id: Entity,
+    pub comic_id: Entity,
+}
 
 #[derive(Component, Default)]
 pub struct Stack {
@@ -44,6 +52,40 @@ impl Stack {
             })
             .id()
     }
+
+    pub fn spawn_stacks(commands: &mut Commands) {
+        let stack_y = -38.;
+        let book_id = Stack::spawn(
+            commands,
+            Transform::from_xyz(-150., stack_y, 0.),
+            ItemType::Book,
+        );
+
+        let movie_id = Stack::spawn(
+            commands,
+            Transform::from_xyz(-50., stack_y, 0.),
+            ItemType::Movie,
+        );
+
+        let game_id = Stack::spawn(
+            commands,
+            Transform::from_xyz(50., stack_y, 0.),
+            ItemType::Game,
+        );
+
+        let comic_id = Stack::spawn(
+            commands,
+            Transform::from_xyz(150., stack_y, 0.),
+            ItemType::Comic,
+        );
+
+        commands.insert_resource(Stacks {
+            book_id,
+            movie_id,
+            game_id,
+            comic_id,
+        });
+    }
 }
 
 /// Put component on an item to label that it's on a stack
@@ -54,9 +96,15 @@ pub struct InStack;
 #[derive(Component)]
 pub struct StackOffset(pub f32);
 
-pub struct SpawnOnStack;
-impl EntityCommand for SpawnOnStack {
-    fn apply(self, id: Entity, world: &mut World) {
+pub struct SpawnOn(pub ItemType);
+impl Command for SpawnOn {
+    fn apply(self, world: &mut World) {
+        let id = match self.0 {
+            ItemType::Book => world.resource::<Stacks>().book_id,
+            ItemType::Movie => world.resource::<Stacks>().movie_id,
+            ItemType::Game => world.resource::<Stacks>().game_id,
+            ItemType::Comic => world.resource::<Stacks>().comic_id,
+        };
         let mut system_state = SystemState::<(
             Commands,
             Res<ItemHandles>,
