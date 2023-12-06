@@ -7,6 +7,7 @@
 mod item;
 mod queue;
 mod stack;
+mod spawning;
 
 use crate::queue::{in_queue_transforms, Queue};
 use bevy::prelude::*;
@@ -16,6 +17,7 @@ use bevy_rand::prelude::*;
 use bevy_vector_shapes::Shape2dPlugin;
 use item::{ItemHandle, ItemHandles, ItemType};
 use queue::{check_active, consume_active, draw_timer};
+use spawning::SpawningPlugin;
 use stack::{restack, stack_items, Stack, SpawnOn};
 
 fn main() {
@@ -28,9 +30,10 @@ fn main() {
                 }),
                 ..default()
             }),
-            DefaultPickingPlugins,
+            DefaultPickingPlugins, // .build().disable::<DebugPickingPlugin>(),
             EntropyPlugin::<ChaCha8Rng>::default(),
             Shape2dPlugin::default(),
+            SpawningPlugin
         ))
         .add_systems(Startup, setup)
         .add_systems(

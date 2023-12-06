@@ -46,7 +46,7 @@ impl Stack {
             .with_children(|children| {
                 children.spawn(Text2dBundle {
                     text: Text::from_section(item_type.label(), default()),
-                    transform: Transform::from_xyz(0., -20., 0.1),
+                    transform: Transform::from_xyz(0., -10., 0.1),
                     ..default()
                 });
             })
@@ -54,28 +54,28 @@ impl Stack {
     }
 
     pub fn spawn_stacks(commands: &mut Commands) {
-        let stack_y = -38.;
+        let stack_y = -54.;
         let book_id = Stack::spawn(
             commands,
-            Transform::from_xyz(-150., stack_y, 0.),
+            Transform::from_xyz(-187., stack_y, 0.),
             ItemType::Book,
         );
 
         let movie_id = Stack::spawn(
             commands,
-            Transform::from_xyz(-50., stack_y, 0.),
+            Transform::from_xyz(-65., stack_y, 0.),
             ItemType::Movie,
         );
 
         let game_id = Stack::spawn(
             commands,
-            Transform::from_xyz(50., stack_y, 0.),
+            Transform::from_xyz(65., stack_y, 0.),
             ItemType::Game,
         );
 
         let comic_id = Stack::spawn(
             commands,
-            Transform::from_xyz(150., stack_y, 0.),
+            Transform::from_xyz(187., stack_y, 0.),
             ItemType::Comic,
         );
 
@@ -126,6 +126,22 @@ impl Command for SpawnOn {
             .id();
         stack.items.push(new_item);
         system_state.apply(world);
+    }
+}
+
+pub struct SpawnRandom;
+impl Command for SpawnRandom {
+    fn apply(self, world: &mut World) {
+        let r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>().next_u32();
+        let category = ((r as f32 / u32::MAX as f32) * 4.).trunc() as u32;
+        let item_type = match category {
+            0 => ItemType::Book,
+            1 => ItemType::Comic,
+            2 => ItemType::Game,
+            3 | 4 => ItemType::Movie,
+            _ => unreachable!()
+        };
+        SpawnOn::apply(SpawnOn(item_type), world);
     }
 }
 
