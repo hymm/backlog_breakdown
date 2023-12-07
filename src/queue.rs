@@ -7,7 +7,7 @@ use bevy::{
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
-use crate::item::ItemType;
+use crate::{item::ItemType, stress::EmitStress};
 
 #[derive(Component)]
 pub struct InQueue;
@@ -43,10 +43,14 @@ impl Queue {
 struct AddToQueue;
 impl EntityCommand for AddToQueue {
     fn apply(self, id: Entity, world: &mut World) {
+        let e = world.entity(id);
+        if !e.contains::<ItemType>() || e.contains::<InQueue>() || e.contains::<ActiveItem>() {
+            return;
+        }
+
         let mut queue = world.query::<&mut Queue>();
         let mut queue = queue.single_mut(world);
         queue.items.push_back(id);
-
         world.entity_mut(id).insert((InQueue, Pickable::IGNORE));
     }
 }
@@ -134,6 +138,7 @@ pub fn consume_active(
         return;
     };
     if timer.0.tick(time.delta()).just_finished() {
+        commands.add(EmitStress(-1.));
         commands.entity(e).despawn();
     }
 }

@@ -8,6 +8,7 @@ mod item;
 mod queue;
 mod spawning;
 mod stack;
+mod stress;
 
 use crate::queue::{in_queue_transforms, Queue};
 use bevy::prelude::*;
@@ -19,6 +20,7 @@ use item::{ItemHandles, ItemType};
 use queue::{check_active, consume_active, draw_timer};
 use spawning::SpawningPlugin;
 use stack::{restack, stack_items, SpawnOn, Stack};
+use stress::StressMeter;
 
 fn main() {
     App::new()
@@ -35,7 +37,10 @@ fn main() {
             Shape2dPlugin::default(),
             SpawningPlugin,
         ))
-        .add_systems(Startup, (setup, ItemHandles::load_handles))
+        .add_systems(
+            Startup,
+            (ItemHandles::load_handles, (setup, StressMeter::spawn)).chain(),
+        )
         .add_systems(
             Update,
             (
@@ -45,6 +50,7 @@ fn main() {
                 check_active,
                 consume_active,
                 draw_timer,
+                StressMeter::animate_meter,
             ),
         )
         .run();
