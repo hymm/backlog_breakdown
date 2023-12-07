@@ -7,7 +7,7 @@ use bevy_rand::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
-    item::{ItemBundle, ItemDragging, ItemHandles, ItemType},
+    item::{ItemBundle, ItemDragging, ItemHandles, ItemType, ItemHandleIndex},
     queue::{ActiveItem, InQueue},
 };
 
@@ -117,11 +117,13 @@ impl Command for SpawnOn {
         };
 
         let offset = ((rng.next_u32() as f32 / u32::MAX as f32) - 0.5) * 7.;
+        let item_index = ((rng.next_u32() as f64 / u32::MAX as f64) * 5. - 0.5).round() as usize;
         let new_item = commands
             .spawn(ItemBundle::new(
                 stack.item_type,
-                stack.item_type.get_stack_handle(&handles),
+                stack.item_type.get_stack_handle(&handles, item_index),
                 offset,
+                item_index,
             ))
             .id();
         stack.items.push(new_item);
@@ -148,10 +150,11 @@ impl Command for SpawnRandom {
 pub struct PushStack;
 impl EntityCommand for PushStack {
     fn apply(self, id: Entity, world: &mut World) {
-        let t = *world.entity(id).get::<ItemType>().unwrap();
-
+        let e = world.entity(id);
+        let t = *e.get::<ItemType>().unwrap();
+        let index = *e.get::<ItemHandleIndex>().unwrap();
         let handles = world.resource::<ItemHandles>();
-        let new_handle = t.get_stack_handle(handles);
+        let new_handle = t.get_stack_handle(handles, index.0);
         let mut e = world.entity_mut(id);
         e.insert(InStack);
         *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
@@ -198,7 +201,8 @@ impl EntityCommand for RemoveFromStack {
         stack.items.remove(i);
 
         let handles = world.resource::<ItemHandles>();
-        let new_handle = t.get_queue_handle(handles);
+        let item_index = world.entity(id).get::<ItemHandleIndex>().unwrap();
+        let new_handle = t.get_queue_handle(handles, item_index.0);
         let mut e = world.entity_mut(id);
         e.remove::<InStack>();
         *e.get_mut::<Handle<Image>>().unwrap() = new_handle;

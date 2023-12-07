@@ -9,6 +9,7 @@ use crate::stack::{InStack, RemoveFromStack, StackOffset};
 pub struct ItemBundle {
     sprite_bundle: SpriteBundle,
     item_type: ItemType,
+    item_index: ItemHandleIndex,
     in_stack: InStack,
     stack_offset: StackOffset,
     pickable_bundle: PickableBundle,
@@ -18,7 +19,12 @@ pub struct ItemBundle {
 }
 
 impl ItemBundle {
-    pub fn new(item_type: ItemType, texture: Handle<Image>, offset: f32) -> Self {
+    pub fn new(
+        item_type: ItemType,
+        texture: Handle<Image>,
+        offset: f32,
+        item_index: usize,
+    ) -> Self {
         Self {
             sprite_bundle: SpriteBundle {
                 sprite: Sprite {
@@ -31,6 +37,7 @@ impl ItemBundle {
                 ..default()
             },
             item_type,
+            item_index: ItemHandleIndex(item_index),
             in_stack: InStack,
             stack_offset: StackOffset(offset),
             pickable_bundle: PickableBundle::default(),
@@ -53,6 +60,9 @@ impl ItemBundle {
         }
     }
 }
+
+#[derive(Component, Clone, Copy)]
+pub struct ItemHandleIndex(pub usize);
 
 #[derive(Component, Default, Clone, Copy, PartialEq)]
 pub enum ItemType {
@@ -100,31 +110,66 @@ impl ItemType {
         }
     }
 
-    pub fn get_stack_handle(&self, handles: &ItemHandles) -> Handle<Image> {
+    pub fn get_stack_handle(&self, handles: &ItemHandles, index: usize) -> Handle<Image> {
         match self {
-            ItemType::Book => handles.book.stack_handle.clone(),
-            ItemType::Movie => handles.movie.stack_handle.clone(),
-            ItemType::Game => handles.game.stack_handle.clone(),
-            ItemType::Comic => handles.comic.stack_handle.clone(),
+            ItemType::Book => handles.books[index].stack_handle.clone(),
+            ItemType::Movie => handles.movies[index].stack_handle.clone(),
+            ItemType::Game => handles.games[index].stack_handle.clone(),
+            ItemType::Comic => handles.comics[index].stack_handle.clone(),
         }
     }
 
-    pub fn get_queue_handle(&self, handles: &ItemHandles) -> Handle<Image> {
+    pub fn get_queue_handle(&self, handles: &ItemHandles, index: usize) -> Handle<Image> {
         match self {
-            ItemType::Book => handles.book.queue_handle.clone(),
-            ItemType::Movie => handles.movie.queue_handle.clone(),
-            ItemType::Game => handles.game.queue_handle.clone(),
-            ItemType::Comic => handles.comic.queue_handle.clone(),
+            ItemType::Book => handles.books[index].queue_handle.clone(),
+            ItemType::Movie => handles.movies[index].queue_handle.clone(),
+            ItemType::Game => handles.games[index].queue_handle.clone(),
+            ItemType::Comic => handles.comics[index].queue_handle.clone(),
         }
     }
 }
 
 #[derive(Resource)]
 pub struct ItemHandles {
-    pub book: ItemHandle,
-    pub movie: ItemHandle,
-    pub game: ItemHandle,
-    pub comic: ItemHandle,
+    pub books: Vec<ItemHandle>,
+    pub movies: Vec<ItemHandle>,
+    pub games: Vec<ItemHandle>,
+    pub comics: Vec<ItemHandle>,
+}
+
+impl ItemHandles {
+    pub fn load_handles(mut commands: Commands, asset_server: Res<AssetServer>) {
+        let mut books = vec![];
+        let mut movies = vec![];
+        let mut comics = vec![];
+        let mut games = vec![];
+
+        for i in 1..=5 {
+            books.push(ItemHandle {
+                stack_handle: asset_server.load(format!("Book{i}_side.png")),
+                queue_handle: asset_server.load(format!("Book{i}_cover.png")),
+            });
+            movies.push(ItemHandle {
+                stack_handle: asset_server.load(format!("Movie{i}_side.png")),
+                queue_handle: asset_server.load(format!("Movie{i}_cover.png")),
+            });
+            comics.push(ItemHandle {
+                stack_handle: asset_server.load(format!("Comic{i}_side.png")),
+                queue_handle: asset_server.load(format!("Comic{i}_cover.png")),
+            });
+            games.push(ItemHandle {
+                stack_handle: asset_server.load(format!("Game{i}_side.png")),
+                queue_handle: asset_server.load(format!("Game{i}_cover.png")),
+            });
+        }
+
+        commands.insert_resource(ItemHandles {
+            books,
+            movies,
+            comics,
+            games,
+        });
+    }
 }
 
 pub struct ItemHandle {

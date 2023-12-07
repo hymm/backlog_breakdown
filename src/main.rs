@@ -15,7 +15,7 @@ use bevy::window::WindowResolution;
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
 use bevy_vector_shapes::Shape2dPlugin;
-use item::{ItemHandle, ItemHandles, ItemType};
+use item::{ItemHandles, ItemType};
 use queue::{check_active, consume_active, draw_timer};
 use spawning::SpawningPlugin;
 use stack::{restack, stack_items, SpawnOn, Stack};
@@ -35,7 +35,7 @@ fn main() {
             Shape2dPlugin::default(),
             SpawningPlugin,
         ))
-        .add_systems(Startup, setup)
+        .add_systems(Startup, (setup, ItemHandles::load_handles))
         .add_systems(
             Update,
             (
@@ -60,25 +60,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         Pickable::IGNORE,
     ));
     Queue::spawn(&mut commands);
-
-    commands.insert_resource(ItemHandles {
-        book: ItemHandle {
-            stack_handle: asset_server.load("Book1_side.png"),
-            queue_handle: asset_server.load("Book1_cover.png"),
-        },
-        movie: ItemHandle {
-            stack_handle: asset_server.load("Movie1_side.png"),
-            queue_handle: asset_server.load("Movie1_cover.png"),
-        },
-        comic: ItemHandle {
-            stack_handle: asset_server.load("Comic1_side.png"),
-            queue_handle: asset_server.load("Comic1_cover.png"),
-        },
-        game: ItemHandle {
-            stack_handle: asset_server.load("Game1_side.png"),
-            queue_handle: asset_server.load("Game1_cover.png"),
-        },
-    });
 
     Stack::spawn_stacks(&mut commands);
 
