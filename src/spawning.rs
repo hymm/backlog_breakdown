@@ -12,9 +12,7 @@ impl Plugin for SpawningPlugin {
         app.insert_resource(TodayTimer {
             timer: Timer::from_seconds(5., TimerMode::Repeating),
             clicked_today: false,
-        })
-        .add_systems(Startup, spawn_button)
-        .add_systems(Update, (check_timer, draw_button).chain());
+        });
     }
 }
 

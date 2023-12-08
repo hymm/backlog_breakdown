@@ -169,8 +169,8 @@ impl EntityCommand for PushStack {
 }
 
 pub fn stack_items(
-    stacks: Query<(&Stack, &GlobalTransform), Changed<Stack>>,
-    mut items: Query<(&mut Transform, &StackOffset), With<InStack>>,
+    stacks: Query<(&Stack, &Transform), Changed<Stack>>,
+    mut items: Query<(&mut Transform, &StackOffset), (With<InStack>, Without<Stack>)>,
 ) {
     for (stack, transform) in &stacks {
         let offset = stack.item_type.stack_dimensions().y;
@@ -179,7 +179,7 @@ pub fn stack_items(
                 continue;
             };
             t.translation =
-                transform.translation() + Vec2::new(x_offset.0, i as f32 * offset).extend(0.);
+                transform.translation + Vec2::new(x_offset.0, i as f32 * offset).extend(0.);
         }
     }
 }
