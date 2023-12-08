@@ -65,7 +65,7 @@ impl ItemBundle {
 #[derive(Component, Clone, Copy)]
 pub struct ItemHandleIndex(pub usize);
 
-#[derive(Component, Default, Clone, Copy, PartialEq)]
+#[derive(Component, Default, Clone, Copy, PartialEq, Debug)]
 pub enum ItemType {
     #[default]
     Book,

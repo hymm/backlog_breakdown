@@ -24,7 +24,7 @@ use game_state::GameState;
 use item::{ItemHandles, ItemType};
 use queue::{check_active, consume_active, draw_timer};
 use spawning::{check_timer, draw_button, spawn_button, SpawningPlugin};
-use stack::{stack_items, SpawnOn, Stack, restack};
+use stack::{restack, stack_items, Stack};
 use start_screen::StartScreenPlugin;
 use stress::{fail_state, StressMeter};
 
@@ -88,22 +88,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     Queue::spawn(&mut commands);
 
     Stack::spawn_stacks(&mut commands, &asset_server);
-
-    for _ in 0..3 {
-        commands.add(SpawnOn(ItemType::Book));
-    }
-
-    for _ in 0..10 {
-        commands.add(SpawnOn(ItemType::Comic));
-    }
-
-    for _ in 0..8 {
-        commands.add(SpawnOn(ItemType::Game));
-    }
-
-    for _ in 0..3 {
-        commands.add(SpawnOn(ItemType::Movie));
-    }
 }
 
 fn despawn_playing(

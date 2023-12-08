@@ -8,7 +8,7 @@ use bevy_rand::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
-    item::{ItemBundle, ItemHandleIndex, ItemHandles, ItemType, ItemDragging},
+    item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
     queue::{ActiveItem, InQueue},
 };
 
@@ -110,6 +110,35 @@ impl Stack {
             game_id,
             comic_id,
         });
+
+        // seed the stacks
+        for _ in 0..3 {
+            commands.add(SpawnOn {
+                item_type: ItemType::Book,
+                stack_entity: book_id,
+            });
+        }
+    
+        for _ in 0..10 {
+            commands.add(SpawnOn {
+                item_type: ItemType::Comic,
+                stack_entity: comic_id,
+            });
+        }
+    
+        for _ in 0..8 {
+            commands.add(SpawnOn {
+                item_type: ItemType::Game,
+                stack_entity: game_id,
+            });
+        }
+    
+        for _ in 0..3 {
+            commands.add(SpawnOn {
+                item_type: ItemType::Movie,
+                stack_entity: movie_id,
+            });
+        }
     }
 }
 
@@ -141,15 +170,13 @@ impl EntityCommand for AddToStack {
     }
 }
 
-pub struct SpawnOn(pub ItemType);
+pub struct SpawnOn {
+    pub item_type: ItemType,
+    pub stack_entity: Entity,
+}
+
 impl Command for SpawnOn {
     fn apply(self, world: &mut World) {
-        let id = match self.0 {
-            ItemType::Book => world.resource::<Stacks>().book_id,
-            ItemType::Movie => world.resource::<Stacks>().movie_id,
-            ItemType::Game => world.resource::<Stacks>().game_id,
-            ItemType::Comic => world.resource::<Stacks>().comic_id,
-        };
         let mut system_state = SystemState::<(
             Commands,
             Res<ItemHandles>,
@@ -157,7 +184,7 @@ impl Command for SpawnOn {
             ResMut<GlobalEntropy<ChaCha8Rng>>,
         )>::new(world);
         let (mut commands, handles, mut query, mut rng) = system_state.get_mut(world);
-        let Ok(mut stack) = query.get_mut(id) else {
+        let Ok(mut stack) = query.get_mut(self.stack_entity) else {
             return;
         };
 
@@ -165,11 +192,11 @@ impl Command for SpawnOn {
         let item_index = ((rng.next_u32() as f64 / u32::MAX as f64) * 5. - 0.5).round() as usize;
         let new_item = commands
             .spawn(ItemBundle::new(
-                stack.item_type,
-                stack.item_type.get_stack_handle(&handles, item_index),
+                self.item_type,
+                self.item_type.get_stack_handle(&handles, item_index),
                 offset,
                 item_index,
-                id,
+                self.stack_entity,
             ))
             .id();
         stack.items.push(new_item);
@@ -180,8 +207,8 @@ impl Command for SpawnOn {
 pub struct SpawnRandom;
 impl Command for SpawnRandom {
     fn apply(self, world: &mut World) {
-        let r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>().next_u32();
-        let category = ((r as f32 / u32::MAX as f32) * 4.).trunc() as u32;
+        let mut r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>();
+        let category = ((r.next_u32() as f32 / u32::MAX as f32) * 4.).trunc() as u32;
         let item_type = match category {
             0 => ItemType::Book,
             1 => ItemType::Comic,
@@ -189,21 +216,19 @@ impl Command for SpawnRandom {
             3 | 4 => ItemType::Movie,
             _ => unreachable!(),
         };
-        SpawnOn::apply(SpawnOn(item_type), world);
+        let stack = ((r.next_u32() as f32 / u32::MAX as f32) * 4. - 0.5).round() as usize;
+        let mut stacks = world.query_filtered::<Entity, With<Stack>>();
+        let stacks: Vec<Entity> = stacks.iter(world).collect();
+        let stack_entity = stacks[stack];
+        SpawnOn::apply(
+            SpawnOn {
+                item_type,
+                stack_entity,
+            },
+            world,
+        );
     }
 }
-
-// pub struct PushStack;
-// impl EntityCommand for PushStack {
-//     fn apply(self, id: Entity, world: &mut World) {
-//         let t = stack_item(world, id);
-//         let mut query = world.query::<&mut Stack>();
-//         let Some(mut stack) = query.find_stack(world, t) else {
-//             return;
-//         };
-//         stack.items.push(id);
-//     }
-// }
 
 fn stack_item(world: &mut World, id: Entity, stack: Entity) -> ItemType {
     let e = world.entity(id);
@@ -260,25 +285,6 @@ impl EntityCommand for RemoveFromStack {
         e.remove::<InStack>();
         *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
         e.get_mut::<Sprite>().unwrap().anchor = Anchor::Center;
-    }
-}
-
-trait FindStack {
-    fn find_stack<'a>(
-        &'a mut self,
-        world: &'a mut World,
-        item_type: ItemType,
-    ) -> Option<Mut<'_, Stack>>;
-}
-
-impl FindStack for QueryState<&mut Stack> {
-    fn find_stack<'a>(
-        &'a mut self,
-        world: &'a mut World,
-        item_type: ItemType,
-    ) -> Option<Mut<'_, Stack>> {
-        self.iter_mut(world)
-            .find(|stack| stack.item_type == item_type)
     }
 }
 
