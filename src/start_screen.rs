@@ -14,7 +14,7 @@ impl Plugin for StartScreenPlugin {
 #[derive(Component)]
 pub struct MenuMarker;
 
-fn spawn_startup_screen(mut commands: Commands) {
+fn spawn_startup_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             MenuMarker,
@@ -53,9 +53,9 @@ fn spawn_startup_screen(mut commands: Commands) {
                         TextBundle::from_section(
                             "Click or Press Space to Start",
                             TextStyle {
+                                font: asset_server.load("chevyray_bird_seed.ttf"),
                                 font_size: 40.0,
                                 color: Color::rgb(0.9, 0.9, 0.9),
-                                ..default()
                             },
                         ),
                     ));

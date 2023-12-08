@@ -7,7 +7,7 @@ use bevy_rand::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
-    item::{ItemBundle, ItemDragging, ItemHandles, ItemType, ItemHandleIndex},
+    item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
     queue::{ActiveItem, InQueue},
 };
 
@@ -33,7 +33,12 @@ impl Stack {
         }
     }
 
-    pub fn spawn(commands: &mut Commands, transform: Transform, item_type: ItemType) -> Entity {
+    pub fn spawn(
+        commands: &mut Commands,
+        transform: Transform,
+        item_type: ItemType,
+        asset_server: &AssetServer,
+    ) -> Entity {
         commands
             .spawn((
                 // TODO: figure out why I had to spawn a sprite to keep the text from getting cut off
@@ -45,7 +50,14 @@ impl Stack {
             ))
             .with_children(|children| {
                 children.spawn(Text2dBundle {
-                    text: Text::from_section(item_type.label(), default()),
+                    text: Text::from_section(
+                        item_type.label(),
+                        TextStyle {
+                            font: asset_server.load("chevyray_bird_seed.ttf"),
+                            font_size: 12.,
+                            color: Color::BLACK,
+                        },
+                    ),
                     transform: Transform::from_xyz(0., -10., 0.1),
                     ..default()
                 });
@@ -53,30 +65,34 @@ impl Stack {
             .id()
     }
 
-    pub fn spawn_stacks(commands: &mut Commands) {
+    pub fn spawn_stacks(commands: &mut Commands, asset_server: &AssetServer) {
         let stack_y = -54.;
         let book_id = Stack::spawn(
             commands,
             Transform::from_xyz(-187., stack_y, 0.),
             ItemType::Book,
+            asset_server,
         );
 
         let movie_id = Stack::spawn(
             commands,
             Transform::from_xyz(-65., stack_y, 0.),
             ItemType::Movie,
+            asset_server,
         );
 
         let game_id = Stack::spawn(
             commands,
             Transform::from_xyz(65., stack_y, 0.),
             ItemType::Game,
+            asset_server,
         );
 
         let comic_id = Stack::spawn(
             commands,
             Transform::from_xyz(187., stack_y, 0.),
             ItemType::Comic,
+            asset_server,
         );
 
         commands.insert_resource(Stacks {
@@ -141,7 +157,7 @@ impl Command for SpawnRandom {
             1 => ItemType::Comic,
             2 => ItemType::Game,
             3 | 4 => ItemType::Movie,
-            _ => unreachable!()
+            _ => unreachable!(),
         };
         SpawnOn::apply(SpawnOn(item_type), world);
     }

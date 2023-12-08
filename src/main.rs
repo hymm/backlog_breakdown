@@ -4,6 +4,7 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+mod fail_screen;
 mod game_state;
 mod item;
 mod queue;
@@ -18,13 +19,14 @@ use bevy::window::WindowResolution;
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
 use bevy_vector_shapes::Shape2dPlugin;
+use fail_screen::FailScreenPlugin;
 use game_state::GameState;
 use item::{ItemHandles, ItemType};
 use queue::{check_active, consume_active, draw_timer};
 use spawning::{check_timer, draw_button, spawn_button, SpawningPlugin};
 use stack::{restack, stack_items, SpawnOn, Stack};
 use start_screen::StartScreenPlugin;
-use stress::StressMeter;
+use stress::{fail_state, StressMeter};
 
 fn main() {
     App::new()
@@ -43,7 +45,7 @@ fn main() {
             SpawningPlugin,
         ))
         .add_systems(Startup, spawn_camera)
-        .add_plugins(StartScreenPlugin)
+        .add_plugins((StartScreenPlugin, FailScreenPlugin))
         .add_systems(
             OnEnter(GameState::Playing),
             (
@@ -62,10 +64,12 @@ fn main() {
                 consume_active,
                 draw_timer,
                 StressMeter::animate_meter,
+                fail_state,
                 (check_timer, draw_button).chain(),
             )
                 .run_if(in_state(GameState::Playing)),
         )
+        .add_systems(OnExit(GameState::Playing), despawn_playing)
         .run();
 }
 
@@ -83,7 +87,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
     Queue::spawn(&mut commands);
 
-    Stack::spawn_stacks(&mut commands);
+    Stack::spawn_stacks(&mut commands, &asset_server);
 
     for _ in 0..3 {
         commands.add(SpawnOn(ItemType::Book));
@@ -99,5 +103,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     for _ in 0..3 {
         commands.add(SpawnOn(ItemType::Movie));
+    }
+}
+
+fn despawn_playing(
+    mut commands: Commands,
+    q: Query<Entity, Or<(With<ItemType>, With<Sprite>, With<Stack>, With<StressMeter>)>>,
+) {
+    for e in &q {
+        commands.entity(e).despawn_recursive();
     }
 }
