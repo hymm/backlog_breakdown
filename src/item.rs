@@ -24,6 +24,7 @@ impl ItemBundle {
         texture: Handle<Image>,
         offset: f32,
         item_index: usize,
+        stack_entity: Entity,
     ) -> Self {
         Self {
             sprite_bundle: SpriteBundle {
@@ -38,7 +39,7 @@ impl ItemBundle {
             },
             item_type,
             item_index: ItemHandleIndex(item_index),
-            in_stack: InStack,
+            in_stack: InStack(stack_entity),
             stack_offset: StackOffset(offset),
             pickable_bundle: PickableBundle::default(),
             on_drag_start: On::<Pointer<DragStart>>::commands_mut(|evt, commands| {

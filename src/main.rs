@@ -24,7 +24,7 @@ use game_state::GameState;
 use item::{ItemHandles, ItemType};
 use queue::{check_active, consume_active, draw_timer};
 use spawning::{check_timer, draw_button, spawn_button, SpawningPlugin};
-use stack::{restack, stack_items, SpawnOn, Stack};
+use stack::{stack_items, SpawnOn, Stack, restack};
 use start_screen::StartScreenPlugin;
 use stress::{fail_state, StressMeter};
 

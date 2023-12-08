@@ -3,11 +3,12 @@ use bevy::{
     prelude::*,
     sprite::Anchor,
 };
+use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
-    item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
+    item::{ItemBundle, ItemHandleIndex, ItemHandles, ItemType, ItemDragging},
     queue::{ActiveItem, InQueue},
 };
 
@@ -41,12 +42,20 @@ impl Stack {
     ) -> Entity {
         commands
             .spawn((
-                // TODO: figure out why I had to spawn a sprite to keep the text from getting cut off
-                SpatialBundle {
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::CYAN,
+                        custom_size: Some(Vec2::new(50., 200.)),
+                        anchor: Anchor::BottomCenter,
+                        ..default()
+                    },
                     transform,
                     ..default()
                 },
                 Stack::new(item_type),
+                On::<Pointer<Drop>>::commands_mut(move |event, commands| {
+                    commands.entity(event.dropped).add(AddToStack(event.target));
+                }),
             ))
             .with_children(|children| {
                 children.spawn(Text2dBundle {
@@ -106,11 +115,31 @@ impl Stack {
 
 /// Put component on an item to label that it's on a stack
 #[derive(Component)]
-pub struct InStack;
+pub struct InStack(pub Entity);
 
 /// Offset when item is in the stack
 #[derive(Component)]
 pub struct StackOffset(pub f32);
+
+struct AddToStack(pub Entity);
+impl EntityCommand for AddToStack {
+    fn apply(self, id: Entity, world: &mut World) {
+        let e = world.entity(id);
+        if !e.contains::<ItemType>() || e.contains::<InQueue>() || e.contains::<ActiveItem>() {
+            return;
+        }
+
+        stack_item(world, id, self.0);
+
+        let mut stack = world.query::<&mut Stack>();
+        let Ok(mut stack) = stack.get_mut(world, self.0) else {
+            dbg!("could not find stack");
+            return;
+        };
+
+        stack.items.push(id);
+    }
+}
 
 pub struct SpawnOn(pub ItemType);
 impl Command for SpawnOn {
@@ -140,6 +169,7 @@ impl Command for SpawnOn {
                 stack.item_type.get_stack_handle(&handles, item_index),
                 offset,
                 item_index,
+                id,
             ))
             .id();
         stack.items.push(new_item);
@@ -163,39 +193,45 @@ impl Command for SpawnRandom {
     }
 }
 
-pub struct PushStack;
-impl EntityCommand for PushStack {
-    fn apply(self, id: Entity, world: &mut World) {
-        let e = world.entity(id);
-        let t = *e.get::<ItemType>().unwrap();
-        let index = *e.get::<ItemHandleIndex>().unwrap();
-        let handles = world.resource::<ItemHandles>();
-        let new_handle = t.get_stack_handle(handles, index.0);
-        let mut e = world.entity_mut(id);
-        e.insert(InStack);
-        *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
-        e.get_mut::<Sprite>().unwrap().anchor = Anchor::BottomCenter;
+// pub struct PushStack;
+// impl EntityCommand for PushStack {
+//     fn apply(self, id: Entity, world: &mut World) {
+//         let t = stack_item(world, id);
+//         let mut query = world.query::<&mut Stack>();
+//         let Some(mut stack) = query.find_stack(world, t) else {
+//             return;
+//         };
+//         stack.items.push(id);
+//     }
+// }
 
-        let mut query = world.query::<&mut Stack>();
-        let Some(mut stack) = query.find_stack(world, t) else {
-            return;
-        };
-        stack.items.push(id);
-    }
+fn stack_item(world: &mut World, id: Entity, stack: Entity) -> ItemType {
+    let e = world.entity(id);
+    let t = *e.get::<ItemType>().unwrap();
+    let index = *e.get::<ItemHandleIndex>().unwrap();
+    let handles = world.resource::<ItemHandles>();
+    let new_handle = t.get_stack_handle(handles, index.0);
+    let mut e = world.entity_mut(id);
+    e.insert(InStack(stack));
+    *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
+    e.get_mut::<Sprite>().unwrap().anchor = Anchor::BottomCenter;
+
+    t
 }
 
 pub fn stack_items(
     stacks: Query<(&Stack, &Transform), Changed<Stack>>,
-    mut items: Query<(&mut Transform, &StackOffset), (With<InStack>, Without<Stack>)>,
+    mut items: Query<(&mut Transform, &StackOffset, &ItemType), (With<InStack>, Without<Stack>)>,
 ) {
     for (stack, transform) in &stacks {
-        let offset = stack.item_type.stack_dimensions().y;
-        for (i, entity) in stack.items.iter().enumerate() {
-            let Ok((mut t, x_offset)) = items.get_mut(*entity) else {
+        let mut current_height = 0.;
+        for entity in stack.items.iter() {
+            let Ok((mut t, x_offset, item_type)) = items.get_mut(*entity) else {
                 continue;
             };
             t.translation =
-                transform.translation + Vec2::new(x_offset.0, i as f32 * offset).extend(0.);
+                transform.translation + Vec2::new(x_offset.0, current_height).extend(0.);
+            current_height += item_type.stack_dimensions().y;
         }
     }
 }
@@ -208,8 +244,9 @@ impl EntityCommand for RemoveFromStack {
             return;
         }
         let t = *e.get::<ItemType>().unwrap();
+        let InStack(stack_id) = *e.get::<InStack>().unwrap();
         let mut query = world.query::<&mut Stack>();
-        let Some(mut stack) = query.find_stack(world, t) else {
+        let Ok(mut stack) = query.get_mut(world, stack_id) else {
             return;
         };
 
@@ -245,10 +282,10 @@ impl FindStack for QueryState<&mut Stack> {
     }
 }
 
-/// if an item is not in queue or stack, put it back in the stack
+// if an item is not in queue or stack, put it back in the stack
 pub fn restack(
     mut commands: Commands,
-    q: Query<
+    free_items: Query<
         Entity,
         (
             With<ItemType>,
@@ -258,8 +295,12 @@ pub fn restack(
             Without<ActiveItem>,
         ),
     >,
+    stacks: Query<Entity, With<Stack>>,
+    mut rng: ResMut<GlobalEntropy<ChaCha8Rng>>,
 ) {
-    for e in &q {
-        commands.entity(e).add(PushStack);
+    let stacks: Vec<Entity> = stacks.iter().collect();
+    for e in &free_items {
+        let rand_stack = (4. * rng.next_u32() as f32 / u32::MAX as f32 - 0.5).round() as usize;
+        commands.entity(e).add(AddToStack(stacks[rand_stack]));
     }
 }
