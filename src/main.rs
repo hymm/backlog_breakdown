@@ -14,8 +14,8 @@ mod start_screen;
 mod stress;
 
 use crate::queue::{in_queue_transforms, Queue};
-use bevy::{prelude::*, asset::AssetMetaCheck};
 use bevy::window::WindowResolution;
+use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
 use bevy_vector_shapes::Shape2dPlugin;
