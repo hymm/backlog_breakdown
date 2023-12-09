@@ -310,6 +310,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
+name = "backlog_breakdown"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_mod_picking",
+ "bevy_rand",
+ "bevy_vector_shapes",
+ "rand_core",
+]
+
+[[package]]
 name = "backtrace"
 version = "0.3.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -607,17 +618,6 @@ dependencies = [
  "bevy_utils",
  "gilrs",
  "thiserror",
-]
-
-[[package]]
-name = "bevy_github_ci_template"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_mod_picking",
- "bevy_rand",
- "bevy_vector_shapes",
- "rand_core",
 ]
 
 [[package]]
