@@ -14,7 +14,7 @@ mod start_screen;
 mod stress;
 
 use crate::queue::{in_queue_transforms, Queue};
-use bevy::prelude::*;
+use bevy::{prelude::*, asset::AssetMetaCheck};
 use bevy::window::WindowResolution;
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
@@ -45,6 +45,7 @@ fn main() {
             Shape2dPlugin::default(),
             SpawningPlugin,
         ))
+        .insert_resource(AssetMetaCheck::Never)
         .add_systems(Startup, spawn_camera)
         .add_plugins((StartScreenPlugin, FailScreenPlugin))
         .add_systems(
