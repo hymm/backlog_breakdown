@@ -18,12 +18,14 @@ pub struct Queue {
 }
 
 impl Queue {
+    const MAX_ITEMS: usize = 2;
+
     pub fn spawn(commands: &mut Commands) {
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::BLUE,
-                    custom_size: Some(Vec2::new(300., 50.)),
+                    color: Color::GRAY.with_a(0.),
+                    custom_size: Some(Vec2::new(640., 100.)),
                     ..default()
                 },
                 transform: Transform::from_xyz(0., -130., 0.),
@@ -50,6 +52,9 @@ impl EntityCommand for AddToQueue {
 
         let mut queue = world.query::<&mut Queue>();
         let mut queue = queue.single_mut(world);
+        if queue.items.len() >= Queue::MAX_ITEMS {
+            return;
+        }
         queue.items.push_back(id);
         world.entity_mut(id).insert((InQueue, Pickable::IGNORE));
     }
@@ -168,7 +173,7 @@ pub fn draw_timer(
     painter.translate(transform.translation().xy().extend(3.));
     painter.thickness = 0.5;
     painter.hollow = false;
-    painter.color = Color::GREEN;
+    painter.color = Color::rgba_u8(0, 0, 0, 180);
     painter.cap = Cap::None;
     painter.arc(20., 0., 2. * PI * fraction_left);
 }
