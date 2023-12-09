@@ -4,7 +4,10 @@ use bevy::{ecs::system::Command, prelude::*};
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
-use crate::{stack::SpawnRandom, stress::EmitStress};
+use crate::{
+    stack::{SpawnRandom, StackPenalty},
+    stress::EmitStress,
+};
 
 pub struct SpawningPlugin;
 impl Plugin for SpawningPlugin {
@@ -64,14 +67,20 @@ pub fn spawn_button(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-pub fn check_timer(mut commands: Commands, mut today: ResMut<TodayTimer>, time: Res<Time>) {
+pub fn check_timer(
+    mut commands: Commands,
+    mut today: ResMut<TodayTimer>,
+    time: Res<Time>,
+    stack_penalty: Res<StackPenalty>,
+) {
     if today.timer.tick(time.delta()).finished() {
-        if today.clicked_today {
+        let click_penalty = if today.clicked_today {
             today.clicked_today = false;
-            commands.add(EmitStress(2.));
+            2.
         } else {
-            commands.add(EmitStress(5.));
-        }
+            5.
+        };
+        commands.add(EmitStress(click_penalty + stack_penalty.0))
     }
 }
 

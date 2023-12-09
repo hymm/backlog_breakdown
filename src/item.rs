@@ -43,6 +43,7 @@ impl ItemBundle {
             stack_offset: StackOffset(offset),
             pickable_bundle: PickableBundle::default(),
             on_drag_start: On::<Pointer<DragStart>>::commands_mut(|evt, commands| {
+                dbg!("drag start");
                 commands
                     .entity(evt.target)
                     .insert((Pickable::IGNORE, ItemDragging))

@@ -24,13 +24,14 @@ use game_state::GameState;
 use item::{ItemHandles, ItemType};
 use queue::{check_active, consume_active, draw_timer};
 use spawning::{check_timer, draw_button, spawn_button, SpawningPlugin};
-use stack::{restack, stack_items, Stack};
+use stack::{check_stack, restack, stack_items, Stack, StackPenalty};
 use start_screen::StartScreenPlugin;
 use stress::{fail_state, StressMeter};
 
 fn main() {
     App::new()
         .add_state::<GameState>()
+        .insert_resource(StackPenalty(0.))
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -65,6 +66,7 @@ fn main() {
                 draw_timer,
                 StressMeter::animate_meter,
                 fail_state,
+                check_stack,
                 (check_timer, draw_button).chain(),
             )
                 .run_if(in_state(GameState::Playing)),

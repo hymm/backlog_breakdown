@@ -14,10 +14,10 @@ use crate::{
 
 #[derive(Resource)]
 struct Stacks {
-    pub book_id: Entity,
-    pub movie_id: Entity,
-    pub game_id: Entity,
-    pub comic_id: Entity,
+    // pub book_id: Entity,
+    // pub movie_id: Entity,
+    // pub game_id: Entity,
+    // pub comic_id: Entity,
 }
 
 #[derive(Component, Default)]
@@ -106,10 +106,10 @@ impl Stack {
         );
 
         commands.insert_resource(Stacks {
-            book_id,
-            movie_id,
-            game_id,
-            comic_id,
+            // book_id,
+            // movie_id,
+            // game_id,
+            // comic_id,
         });
 
         // seed the stacks
@@ -310,4 +310,23 @@ pub fn restack(
         let rand_stack = (4. * rng.next_u32() as f32 / u32::MAX as f32 - 0.5).round() as usize;
         commands.entity(e).add(AddToStack(stacks[rand_stack]));
     }
+}
+
+#[derive(Resource)]
+pub struct StackPenalty(pub f32);
+
+pub fn check_stack(
+    stacks: Query<&Stack>,
+    items_query: Query<&ItemType, With<InStack>>,
+    mut stack_penalty: ResMut<StackPenalty>,
+) {
+    let mut penalty = 0.;
+    for Stack { item_type, items } in &stacks {
+        for item in items.iter() {
+            if items_query.get(*item).unwrap() != item_type {
+                penalty += 0.5;
+            }
+        }
+    }
+    stack_penalty.0 = penalty;
 }
