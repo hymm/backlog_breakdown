@@ -4,6 +4,7 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+mod consume_counter;
 mod fail_screen;
 mod game_state;
 mod item;
@@ -19,6 +20,7 @@ use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
 use bevy_vector_shapes::Shape2dPlugin;
+use consume_counter::CounterMarker;
 use fail_screen::FailScreenPlugin;
 use game_state::GameState;
 use item::{ItemHandles, ItemType};
@@ -41,7 +43,9 @@ fn main() {
                 }),
                 ..default()
             }),
-            DefaultPickingPlugins.build().disable::<DebugPickingPlugin>(),
+            DefaultPickingPlugins
+                .build()
+                .disable::<DebugPickingPlugin>(),
             EntropyPlugin::<ChaCha8Rng>::default(),
             Shape2dPlugin::default(),
             SpawningPlugin,
@@ -52,7 +56,12 @@ fn main() {
             OnEnter(GameState::Playing),
             (
                 ItemHandles::load_handles,
-                (setup, StressMeter::spawn, spawn_button),
+                (
+                    setup,
+                    StressMeter::spawn,
+                    spawn_button,
+                    CounterMarker::spawn,
+                ),
             )
                 .chain(),
         )
@@ -68,11 +77,15 @@ fn main() {
                 StressMeter::animate_meter,
                 fail_state,
                 check_stack,
+                CounterMarker::update_counter,
                 (check_timer, draw_button).chain(),
             )
                 .run_if(in_state(GameState::Playing)),
         )
-        .add_systems(OnExit(GameState::Playing), despawn_playing)
+        .add_systems(
+            OnExit(GameState::Playing),
+            (despawn_playing, CounterMarker::despawn),
+        )
         .run();
 }
 

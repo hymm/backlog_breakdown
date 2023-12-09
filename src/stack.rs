@@ -60,7 +60,7 @@ impl Stack {
             .with_children(|children| {
                 children.spawn(ShapeBundle {
                     spatial_bundle: SpatialBundle {
-                        transform: Transform::from_xyz(0., -12., 0.05),
+                        transform: Transform::from_xyz(0., -12., 0.5),
                         ..default()
                     },
                     ..ShapeBundle::rect(&ShapeConfig {
@@ -79,7 +79,7 @@ impl Stack {
                             color: Color::BLACK,
                         },
                     ),
-                    transform: Transform::from_xyz(0., -14., 0.1),
+                    transform: Transform::from_xyz(0., -14., 1.0),
                     ..default()
                 });
             })
@@ -351,6 +351,6 @@ pub fn check_stack(
     stack_penalty.0 = penalty;
 }
 
-pub fn blick(color_1: Color, color_2: Color, time: f32) {
-    
+pub fn blink(color_1: Color, color_2: Color, time: f32) {
+
 }

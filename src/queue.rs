@@ -7,7 +7,7 @@ use bevy::{
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
-use crate::{item::ItemType, stress::EmitStress};
+use crate::{item::ItemType, stress::EmitStress, consume_counter::ConsumeCount};
 
 #[derive(Component)]
 pub struct InQueue;
@@ -131,15 +131,23 @@ pub fn check_active(mut commands: Commands, active_query: Query<(), With<ActiveI
 
 pub fn consume_active(
     mut commands: Commands,
-    mut active_query: Query<(Entity, &mut ActiveItem)>,
+    mut active_query: Query<(Entity, &ItemType, &mut ActiveItem)>,
     time: Res<Time>,
+    mut consumed: ResMut<ConsumeCount>,
 ) {
-    let Ok((e, mut timer)) = active_query.get_single_mut() else {
+    let Ok((e, item_type, mut timer)) = active_query.get_single_mut() else {
         return;
     };
     if timer.0.tick(time.delta()).just_finished() {
         commands.add(EmitStress(-1.));
         commands.entity(e).despawn();
+        consumed.total += 1;
+        match item_type {
+            ItemType::Book => consumed.books += 1,
+            ItemType::Movie => consumed.movies += 1,
+            ItemType::Game => consumed.games += 1,
+            ItemType::Comic => consumed.comics += 1,
+        }
     }
 }
 
