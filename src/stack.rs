@@ -4,6 +4,7 @@ use bevy::{
     sprite::Anchor,
 };
 use bevy_mod_picking::prelude::*;
+use bevy_vector_shapes::prelude::*;
 use bevy_rand::prelude::*;
 use rand_core::RngCore;
 
@@ -11,14 +12,6 @@ use crate::{
     item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
     queue::{ActiveItem, InQueue},
 };
-
-#[derive(Resource)]
-struct Stacks {
-    // pub book_id: Entity,
-    // pub movie_id: Entity,
-    // pub game_id: Entity,
-    // pub comic_id: Entity,
-}
 
 #[derive(Component, Default)]
 pub struct Stack {
@@ -44,8 +37,8 @@ impl Stack {
             .spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::CYAN,
-                        custom_size: Some(Vec2::new(50., 200.)),
+                        color: Color::CYAN.with_a(0.),
+                        custom_size: Some(Vec2::new(100., 200.)),
                         anchor: Anchor::BottomCenter,
                         ..default()
                     },
@@ -65,6 +58,18 @@ impl Stack {
                 }),
             ))
             .with_children(|children| {
+                children.spawn(ShapeBundle {
+                    spatial_bundle: SpatialBundle {
+                        transform: Transform::from_xyz(0., -12., 0.05),
+                        ..default()
+                    },
+                    ..ShapeBundle::rect(&ShapeConfig {
+                        color: Color::rgb_u8(217, 155, 150),
+                        corner_radii: Vec4::splat(8.),
+                        ..ShapeConfig::default_2d()
+                    }, Vec2::new(60., 14.))
+                });
+
                 children.spawn(Text2dBundle {
                     text: Text::from_section(
                         item_type.label(),
@@ -74,7 +79,7 @@ impl Stack {
                             color: Color::BLACK,
                         },
                     ),
-                    transform: Transform::from_xyz(0., -10., 0.1),
+                    transform: Transform::from_xyz(0., -14., 0.1),
                     ..default()
                 });
             })
@@ -110,13 +115,6 @@ impl Stack {
             ItemType::Comic,
             asset_server,
         );
-
-        commands.insert_resource(Stacks {
-            // book_id,
-            // movie_id,
-            // game_id,
-            // comic_id,
-        });
 
         // seed the stacks
         for _ in 0..3 {
@@ -322,17 +320,37 @@ pub fn restack(
 pub struct StackPenalty(pub f32);
 
 pub fn check_stack(
-    stacks: Query<&Stack>,
+    stacks: Query<(&Stack, &Children)>,
     items_query: Query<&ItemType, With<InStack>>,
+    mut rects: Query<&mut Rectangle>,
     mut stack_penalty: ResMut<StackPenalty>,
 ) {
     let mut penalty = 0.;
-    for Stack { item_type, items } in &stacks {
+    for (Stack { item_type, items }, children) in &stacks {
+        let rect_entity = children.iter().next();
+        let mut text_stack_has_penalty = false;
         for item in items.iter() {
             if items_query.get(*item).unwrap() != item_type {
+                text_stack_has_penalty = true;
                 penalty += 0.5;
             }
         }
+
+        if let Some(rect_entity) = rect_entity {
+            let Ok(ref mut rect) = rects.get_mut(*rect_entity) else {
+                continue;
+            };
+
+            rect.color = if text_stack_has_penalty {
+                Color::CRIMSON
+            } else {
+                Color::rgb_u8(217, 155, 150)
+            };
+        }
     }
     stack_penalty.0 = penalty;
+}
+
+pub fn blick(color_1: Color, color_2: Color, time: f32) {
+    
 }
