@@ -53,7 +53,13 @@ impl Stack {
                     ..default()
                 },
                 Stack::new(item_type),
-                PickableBundle::default(),
+                PickableBundle {
+                    pickable: Pickable {
+                        should_block_lower: true,
+                        should_emit_events: true,
+                    },
+                    ..default()
+                },
                 On::<Pointer<Drop>>::commands_mut(move |event, commands| {
                     commands.entity(event.dropped).add(AddToStack(event.target));
                 }),
@@ -79,28 +85,28 @@ impl Stack {
         let stack_y = -54.;
         let book_id = Stack::spawn(
             commands,
-            Transform::from_xyz(-187., stack_y, 0.),
+            Transform::from_xyz(-187., stack_y, 0.1),
             ItemType::Book,
             asset_server,
         );
 
         let movie_id = Stack::spawn(
             commands,
-            Transform::from_xyz(-65., stack_y, 0.),
+            Transform::from_xyz(-65., stack_y, 0.1),
             ItemType::Movie,
             asset_server,
         );
 
         let game_id = Stack::spawn(
             commands,
-            Transform::from_xyz(65., stack_y, 0.),
+            Transform::from_xyz(65., stack_y, 0.1),
             ItemType::Game,
             asset_server,
         );
 
         let comic_id = Stack::spawn(
             commands,
-            Transform::from_xyz(187., stack_y, 0.),
+            Transform::from_xyz(187., stack_y, 0.1),
             ItemType::Comic,
             asset_server,
         );
@@ -256,7 +262,7 @@ pub fn stack_items(
                 continue;
             };
             t.translation =
-                transform.translation + Vec2::new(x_offset.0, current_height).extend(0.);
+                transform.translation + Vec2::new(x_offset.0, current_height).extend(1.);
             current_height += item_type.stack_dimensions().y;
         }
     }
