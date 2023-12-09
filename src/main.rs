@@ -32,6 +32,7 @@ fn main() {
     App::new()
         .add_state::<GameState>()
         .insert_resource(StackPenalty(0.))
+        .insert_resource(AssetMetaCheck::Never)
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -45,7 +46,6 @@ fn main() {
             Shape2dPlugin::default(),
             SpawningPlugin,
         ))
-        .insert_resource(AssetMetaCheck::Never)
         .add_systems(Startup, spawn_camera)
         .add_plugins((StartScreenPlugin, FailScreenPlugin))
         .add_systems(
