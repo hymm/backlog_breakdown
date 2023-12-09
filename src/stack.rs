@@ -53,6 +53,7 @@ impl Stack {
                     ..default()
                 },
                 Stack::new(item_type),
+                PickableBundle::default(),
                 On::<Pointer<Drop>>::commands_mut(move |event, commands| {
                     commands.entity(event.dropped).add(AddToStack(event.target));
                 }),
@@ -118,21 +119,21 @@ impl Stack {
                 stack_entity: book_id,
             });
         }
-    
+
         for _ in 0..10 {
             commands.add(SpawnOn {
                 item_type: ItemType::Comic,
                 stack_entity: comic_id,
             });
         }
-    
+
         for _ in 0..8 {
             commands.add(SpawnOn {
                 item_type: ItemType::Game,
                 stack_entity: game_id,
             });
         }
-    
+
         for _ in 0..3 {
             commands.add(SpawnOn {
                 item_type: ItemType::Movie,

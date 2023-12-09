@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, collections::VecDeque};
+use std::{collections::VecDeque, f32::consts::PI};
 
 use bevy::{
     ecs::system::{Command, EntityCommand},
