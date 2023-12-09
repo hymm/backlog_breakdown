@@ -33,7 +33,7 @@ impl StressMeter {
             ))
             .with_children(|children| {
                 children.spawn(SpriteBundle {
-                    transform: Transform::from_xyz(0., Self::DIM.y / 2. + 16., 0.),
+                    transform: Transform::from_xyz(0., Self::DIM.y / 2. + 16., 0.1),
                     texture: asset_server.load("debuff_icon.png"),
                     ..default()
                 });

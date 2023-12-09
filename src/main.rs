@@ -41,7 +41,7 @@ fn main() {
                 }),
                 ..default()
             }),
-            DefaultPickingPlugins, // .build().disable::<DebugPickingPlugin>(),
+            DefaultPickingPlugins.build().disable::<DebugPickingPlugin>(),
             EntropyPlugin::<ChaCha8Rng>::default(),
             Shape2dPlugin::default(),
             SpawningPlugin,
