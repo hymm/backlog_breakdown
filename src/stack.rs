@@ -9,21 +9,26 @@ use bevy_vector_shapes::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
+    dialog::ShownDialog,
     item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
-    queue::{ActiveItem, InQueue}, dialog::ShownDialog,
+    queue::{ActiveItem, InQueue},
+    stress::StressMeter, spawning::TodayTimer,
 };
 
 #[derive(Component, Default)]
 pub struct Stack {
     item_type: ItemType,
     items: Vec<Entity>,
+    current_height: f32,
 }
 
 impl Stack {
+    const MAX_HEIGHT: f32 = 240.;
     fn new(item_type: ItemType) -> Self {
         Self {
             item_type,
             items: Vec::new(),
+            current_height: 0.,
         }
     }
 
@@ -38,7 +43,7 @@ impl Stack {
                 SpriteBundle {
                     sprite: Sprite {
                         color: Color::CYAN.with_a(0.),
-                        custom_size: Some(Vec2::new(100., 200.)),
+                        custom_size: Some(Vec2::new(100., Self::MAX_HEIGHT)),
                         anchor: Anchor::BottomCenter,
                         ..default()
                     },
@@ -54,7 +59,9 @@ impl Stack {
                     ..default()
                 },
                 On::<Pointer<Drop>>::commands_mut(move |event, commands| {
-                    let Some(ref mut entity_commands) = commands.get_entity(event.dropped) else { return; };
+                    let Some(ref mut entity_commands) = commands.get_entity(event.dropped) else {
+                        return;
+                    };
                     entity_commands.add(AddToStack(event.target));
                 }),
             ))
@@ -167,15 +174,28 @@ impl EntityCommand for AddToStack {
             return;
         }
 
-        stack_item(world, id, self.0);
-
-        let mut stack = world.query::<&mut Stack>();
-        let Ok(mut stack) = stack.get_mut(world, self.0) else {
+        let mut stack = world.query::<&Stack>();
+        let Ok(stack) = stack.get_mut(world, self.0) else {
             dbg!("could not find stack");
             return;
         };
+        let stack_entity = if stack.current_height < Stack::MAX_HEIGHT {
+            self.0
+        } else {
+            let Some(e) = get_random_stack(world) else {
+                // there are no free stacks.
+                return;
+            };
+            e
+        };
 
+        let mut stack = world.query::<&mut Stack>();
+        let Ok(mut stack) = stack.get_mut(world, stack_entity) else {
+            dbg!("could not find stack");
+            return;
+        };
         stack.items.push(id);
+        stack_item(world, id, stack_entity);
     }
 }
 
@@ -209,13 +229,39 @@ impl Command for SpawnOn {
             ))
             .id();
         stack.items.push(new_item);
+        stack.current_height += self.item_type.stack_dimensions().y;
         system_state.apply(world);
     }
 }
 
-pub struct SpawnRandom;
-impl Command for SpawnRandom {
-    fn apply(self, world: &mut World) {
+fn get_random_stack(world: &mut World) -> Option<Entity> {
+    let mut stacks = world.query::<(Entity, &Stack)>();
+    let stacks: Vec<Entity> = stacks
+        .iter(world)
+        .filter_map(|(e, stack)| {
+            if stack.current_height > Stack::MAX_HEIGHT {
+                None
+            } else {
+                Some(e)
+            }
+        })
+        .collect();
+
+    if stacks.is_empty() {
+        return None;
+    }
+
+    let mut r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>();
+    let stack =
+        ((r.next_u32() as f32 / u32::MAX as f32) * stacks.len() as f32 - 0.5).round() as usize;
+
+    Some(stacks[stack])
+}
+
+pub struct SpawnEvent;
+
+impl SpawnEvent {
+    fn spawn_random(world: &mut World) -> bool {
         let mut r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>();
         let category = ((r.next_u32() as f32 / u32::MAX as f32) * 4.).trunc() as u32;
         let item_type = match category {
@@ -225,10 +271,10 @@ impl Command for SpawnRandom {
             3 | 4 => ItemType::Movie,
             _ => unreachable!(),
         };
-        let stack = ((r.next_u32() as f32 / u32::MAX as f32) * 4. - 0.5).round() as usize;
-        let mut stacks = world.query_filtered::<Entity, With<Stack>>();
-        let stacks: Vec<Entity> = stacks.iter(world).collect();
-        let stack_entity = stacks[stack];
+
+        let Some(stack_entity) = get_random_stack(world) else {
+            return false;
+        };
         SpawnOn::apply(
             SpawnOn {
                 item_type,
@@ -236,10 +282,11 @@ impl Command for SpawnRandom {
             },
             world,
         );
+
+        true
     }
 }
 
-pub struct SpawnEvent;
 impl Command for SpawnEvent {
     fn apply(self, world: &mut World) {
         let mut r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>();
@@ -247,15 +294,31 @@ impl Command for SpawnEvent {
         if event {
             let event_size =
                 ((r.next_u32() as f32 / u32::MAX as f32) * 5. - 0.5).round() as usize + 4;
+            let mut spawned_one = false;
             for _ in 0..event_size {
                 let mut r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>();
                 let dialog = ShownDialog::new_random(&mut r);
                 world.insert_resource(dialog);
-                SpawnRandom::apply(SpawnRandom, world);
+                if !Self::spawn_random(world) {
+                    // all stacks are full
+                    break;
+                }
+                spawned_one = true;
             }
-        } else {
-            SpawnRandom::apply(SpawnRandom, world);
+            // don't decrement the stress meter if we haven't bought anything
+            if !spawned_one {
+                return;
+            }
+        } else if !Self::spawn_random(world) {
+            return;
         }
+
+        let mut stress_meter = world.query::<&mut StressMeter>();
+        let mut stress_meter = stress_meter.single_mut(world);
+        stress_meter.value -= 1.;
+
+        let mut today = world.resource_mut::<TodayTimer>();
+        today.clicked_today = true;
     }
 }
 
@@ -274,10 +337,10 @@ fn stack_item(world: &mut World, id: Entity, stack: Entity) -> ItemType {
 }
 
 pub fn stack_items(
-    stacks: Query<(&Stack, &Transform), Changed<Stack>>,
+    mut stacks: Query<(&mut Stack, &Transform), Changed<Stack>>,
     mut items: Query<(&mut Transform, &StackOffset, &ItemType), (With<InStack>, Without<Stack>)>,
 ) {
-    for (stack, transform) in &stacks {
+    for (mut stack, transform) in &mut stacks {
         let mut current_height = 0.;
         for entity in stack.items.iter() {
             let Ok((mut t, x_offset, item_type)) = items.get_mut(*entity) else {
@@ -287,6 +350,7 @@ pub fn stack_items(
                 transform.translation + Vec2::new(x_offset.0, current_height).extend(1.);
             current_height += item_type.stack_dimensions().y;
         }
+        stack.current_height = current_height;
     }
 }
 
@@ -350,7 +414,13 @@ pub fn check_stack(
     mut stack_penalty: ResMut<StackPenalty>,
 ) {
     let mut penalty = 0.;
-    for (Stack { item_type, items }, children) in &stacks {
+    for (
+        Stack {
+            item_type, items, ..
+        },
+        children,
+    ) in &stacks
+    {
         let rect_entity = children.iter().next();
         let mut text_stack_has_penalty = false;
         for item in items.iter() {

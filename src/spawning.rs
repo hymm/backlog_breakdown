@@ -22,7 +22,7 @@ impl Plugin for SpawningPlugin {
 #[derive(Resource)]
 pub struct TodayTimer {
     timer: Timer,
-    clicked_today: bool,
+    pub clicked_today: bool,
 }
 
 #[derive(Component)]
@@ -44,8 +44,6 @@ pub fn spawn_button(mut commands: Commands, asset_server: Res<AssetServer>) {
             PickableBundle::default(),
             On::<Pointer<Click>>::commands_mut(|_, commands| {
                 commands.add(SpawnEvent);
-                commands.add(ClickedToday);
-                commands.add(EmitStress(-1.));
             }),
         ))
         .with_children(|children| {
@@ -104,12 +102,4 @@ pub fn draw_button(
     };
     painter.cap = Cap::None;
     painter.arc(18., 0., 2. * PI * fraction_left);
-}
-
-struct ClickedToday;
-impl Command for ClickedToday {
-    fn apply(self, world: &mut World) {
-        let mut today = world.resource_mut::<TodayTimer>();
-        today.clicked_today = true;
-    }
 }

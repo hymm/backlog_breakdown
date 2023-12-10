@@ -83,7 +83,8 @@ impl ShownDialog {
     }
 
     pub fn new_random(rng: &mut GlobalEntropy<ChaCha8Rng>) -> Self {
-        let i = ((rng.next_u32() as f32 / u32::MAX as f32) * Self::DIALOGS.len() as f32 - 0.5).round() as usize;
+        let i = ((rng.next_u32() as f32 / u32::MAX as f32) * Self::DIALOGS.len() as f32 - 0.5)
+            .round() as usize;
         Self(Some(Self::DIALOGS[i]))
     }
 }

@@ -32,7 +32,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             children.spawn((
                 FailMarker,
                 TextBundle::from_section(
-                    "You Failed!",
+                    "You Collapsed from Stress!",
                     TextStyle {
                         font: asset_server.load("chevyray_bird_seed.ttf"),
                         font_size: 40.0,

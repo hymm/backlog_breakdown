@@ -7,7 +7,7 @@ use bevy::{
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
-use crate::{item::ItemType, stress::EmitStress, consume_counter::ConsumeCount};
+use crate::{consume_counter::ConsumeCount, item::ItemType, stress::EmitStress};
 
 #[derive(Component)]
 pub struct InQueue;
