@@ -64,6 +64,7 @@ fn main() {
                     spawn_button,
                     CounterMarker::spawn,
                     ShownDialog::spawn,
+                    BackgroundMusic::spawn,
                 ),
             )
                 .chain(),
@@ -92,6 +93,7 @@ fn main() {
                 despawn_playing,
                 CounterMarker::despawn,
                 ShownDialog::despawn,
+                BackgroundMusic::despawn,
             ),
         )
         .run();
@@ -120,5 +122,26 @@ fn despawn_playing(
 ) {
     for e in &q {
         commands.entity(e).despawn_recursive();
+    }
+}
+
+#[derive(Component)]
+struct BackgroundMusic;
+
+impl BackgroundMusic {
+    fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+        commands.spawn((
+            BackgroundMusic,
+            AudioBundle {
+                source: asset_server.load("carefully-does-it.ogg"),
+                settings: PlaybackSettings::LOOP,
+            },
+        ));
+    }
+
+    fn despawn(mut commands: Commands, q: Query<Entity, With<BackgroundMusic>>) {
+        for e in &q {
+            commands.entity(e).despawn();
+        }
     }
 }
