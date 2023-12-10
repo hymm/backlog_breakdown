@@ -68,6 +68,7 @@ fn main() {
                     CounterMarker::spawn,
                     ShownDialog::spawn,
                     BackgroundMusic::spawn,
+                    Queue::spawn,
                 ),
             )
                 .chain(),
@@ -128,7 +129,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         Pickable::IGNORE,
     ));
-    Queue::spawn(&mut commands);
+    
 
     Stack::spawn_stacks(&mut commands, &asset_server);
 }

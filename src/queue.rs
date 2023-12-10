@@ -7,7 +7,12 @@ use bevy::{
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
-use crate::{consume_counter::ConsumeCount, item::{ItemType, ItemHandleIndex}, stress::{EmitStress, StressPopupText}, Sfx};
+use crate::{
+    consume_counter::ConsumeCount,
+    item::{ItemHandleIndex, ItemType},
+    stress::{EmitStress, StressPopupText},
+    Sfx,
+};
 
 #[derive(Component)]
 pub struct InQueue;
@@ -20,25 +25,33 @@ pub struct Queue {
 impl Queue {
     const MAX_ITEMS: usize = 2;
 
-    pub fn spawn(commands: &mut Commands) {
-        commands.spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    color: Color::GRAY.with_a(0.),
-                    custom_size: Some(Vec2::new(640., 100.)),
+    pub fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+        commands
+            .spawn((
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::GRAY.with_a(0.),
+                        custom_size: Some(Vec2::new(640., 100.)),
+                        ..default()
+                    },
+                    transform: Transform::from_xyz(0., -130., 0.1),
                     ..default()
                 },
-                transform: Transform::from_xyz(0., -130., 0.),
-                ..default()
-            },
-            PickableBundle::default(),
-            Queue::default(),
-            On::<Pointer<Drop>>::commands_mut(move |event, commands| {
-                commands.entity(event.dropped).add(AddToQueue);
-            }),
-        ));
+                PickableBundle::default(),
+                Queue::default(),
+                On::<Pointer<Drop>>::commands_mut(move |event, commands| {
+                    commands.entity(event.dropped).add(AddToQueue);
+                }),
+            ))
+            .with_children(|children| {
+                children.spawn((SpriteBundle {
+                    texture: asset_server.load("queue.png"),
+                    transform: Transform::from_xyz(0., 0., 1.),
+                    ..default()
+                },));
+            });
 
-        ConsumeActive::spawn(commands);
+        ConsumeActive::spawn(&mut commands);
     }
 }
 
@@ -66,7 +79,7 @@ pub fn in_queue_transforms(
     mut items: Query<&mut Transform, With<InQueue>>,
     queue: Query<(&Queue, &GlobalTransform)>,
 ) {
-    const FIRST_ITEM_OFFSET: Vec3 = Vec3::new(125.0, 0.0, 1.0);
+    const FIRST_ITEM_OFFSET: Vec3 = Vec3::new(20.0, 0.0, 1.0);
     let Ok((queue, queue_transform)) = queue.get_single() else {
         return;
     };
@@ -75,8 +88,9 @@ pub fn in_queue_transforms(
         let Ok(mut transform) = items.get_mut(*entity) else {
             continue;
         };
-        transform.translation =
-            queue_transform.translation() + FIRST_ITEM_OFFSET - Vec3::X * (index * 50) as f32;
+        transform.translation = queue_transform.translation() + FIRST_ITEM_OFFSET
+            - Vec3::X * (index * 75) as f32
+            + Vec3::Z;
     }
 }
 
@@ -90,11 +104,11 @@ impl ConsumeActive {
             ConsumeActive,
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::BLUE,
+                    color: Color::BLUE.with_a(0.),
                     custom_size: Some(Vec2::new(50., 50.)),
                     ..default()
                 },
-                transform: Transform::from_xyz(200., -130., 0.),
+                transform: Transform::from_xyz(98., -130., 0.),
                 ..default()
             },
         ));
@@ -138,7 +152,13 @@ pub fn check_active(mut commands: Commands, active_query: Query<(), With<ActiveI
 
 pub fn consume_active(
     mut commands: Commands,
-    mut active_query: Query<(Entity, &ItemType, &ItemHandleIndex, &mut ActiveItem, &GlobalTransform)>,
+    mut active_query: Query<(
+        Entity,
+        &ItemType,
+        &ItemHandleIndex,
+        &mut ActiveItem,
+        &GlobalTransform,
+    )>,
     time: Res<Time>,
     mut consumed: ResMut<ConsumeCount>,
     sfx: Res<Sfx>,
@@ -165,7 +185,11 @@ pub fn consume_active(
             ItemType::Comic => &mut consumed.comics,
         };
         item_totals.total += 1;
-        item_totals.items.entry(item_handle.0).and_modify(|c| *c += 1).or_insert(1);
+        item_totals
+            .items
+            .entry(item_handle.0)
+            .and_modify(|c| *c += 1)
+            .or_insert(1);
     }
 }
 
