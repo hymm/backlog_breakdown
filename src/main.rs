@@ -38,13 +38,15 @@ fn main() {
         .insert_resource(StackPenalty(0.))
         .insert_resource(AssetMetaCheck::Never)
         .add_plugins((
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    resolution: WindowResolution::new(640., 360.),
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        resolution: WindowResolution::new(640., 360.),
+                        ..default()
+                    }),
                     ..default()
-                }),
-                ..default()
-            }),
+                })
+                .set(ImagePlugin::default_nearest()),
             DefaultPickingPlugins
                 .build()
                 .disable::<DebugPickingPlugin>(),

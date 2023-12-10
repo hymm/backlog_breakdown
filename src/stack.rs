@@ -9,7 +9,7 @@ use bevy_vector_shapes::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
-    dialog::ShownDialog,
+    dialog::{ShownDialog, DialogBox},
     item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
     queue::{ActiveItem, InQueue},
     spawning::TodayTimer,
@@ -300,6 +300,8 @@ impl Command for SpawnEvent {
             for _ in 0..event_size {
                 let mut r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>();
                 let dialog = ShownDialog::new_random(&mut r);
+                let mut dialog_box = world.query::<&mut DialogBox>();
+                dialog_box.single_mut(world).timer.reset();
                 world.insert_resource(dialog);
                 if !Self::spawn_random(world) {
                     // all stacks are full

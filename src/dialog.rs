@@ -5,7 +5,9 @@ use bevy_vector_shapes::prelude::*;
 use rand_core::RngCore;
 
 #[derive(Component)]
-pub struct DialogBox;
+pub struct DialogBox {
+    pub timer: Timer,
+}
 
 #[derive(Component)]
 pub struct DialogText;
@@ -27,7 +29,9 @@ impl ShownDialog {
 
         commands
             .spawn((
-                DialogBox,
+                DialogBox {
+                    timer: Timer::from_seconds(3.5, TimerMode::Once),
+                },
                 SpriteBundle {
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(290., 22.)),
@@ -70,15 +74,20 @@ impl ShownDialog {
     }
 
     pub fn handle_visibility(
-        mut dialog_box: Query<&mut Visibility, With<DialogBox>>,
+        mut dialog_box: Query<(&mut Visibility, &mut DialogBox)>,
         mut dialog_text: Query<&mut Text, With<DialogText>>,
-        shown_dialog: Res<ShownDialog>,
+        mut shown_dialog: ResMut<ShownDialog>,
+        time: Res<Time>,
     ) {
+        let (mut dialog_visible, mut dialog_box) = dialog_box.single_mut();
         if let Some(ref dialog) = shown_dialog.0 {
-            *dialog_box.single_mut() = Visibility::Visible;
+            *dialog_visible = Visibility::Visible;
             dialog_text.single_mut().sections[0].value = dialog.to_string();
+            if dialog_box.timer.tick(time.delta()).finished() {
+                shown_dialog.0 = None;
+            }
         } else {
-            *dialog_box.single_mut() = Visibility::Hidden;
+            *dialog_visible = Visibility::Hidden;
         }
     }
 

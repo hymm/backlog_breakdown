@@ -10,7 +10,7 @@ use bevy_vector_shapes::prelude::*;
 use crate::{
     stack::{SpawnEvent, StackPenalty},
     stress::{EmitStress, StressPopupText},
-    Sfx,
+    Sfx, dialog::{DialogBox, DialogText, ShownDialog},
 };
 
 pub struct SpawningPlugin;
