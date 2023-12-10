@@ -247,8 +247,10 @@ impl Command for SpawnEvent {
             let event_size =
                 ((r.next_u32() as f32 / u32::MAX as f32) * 10. - 0.5).round() as usize + 1;
             for _ in 0..event_size {
+                let mut r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>();
+                let dialog = ShownDialog::new_random(&mut r);
+                world.insert_resource(dialog);
                 SpawnRandom::apply(SpawnRandom, world);
-                world.insert_resource(ShownDialog(Some("Something happened!")));
             }
         } else {
             SpawnRandom::apply(SpawnRandom, world);

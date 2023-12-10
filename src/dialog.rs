@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_mod_picking::prelude::*;
+use bevy_rand::{prelude::ChaCha8Rng, resource::GlobalEntropy};
 use bevy_vector_shapes::prelude::*;
+use rand_core::RngCore;
 
 #[derive(Component)]
 pub struct DialogBox;
@@ -12,6 +14,14 @@ pub struct DialogText;
 pub struct ShownDialog(pub Option<&'static str>);
 
 impl ShownDialog {
+    const DIALOGS: [&'static str; 5] = [
+        "Humble Bundle again...",
+        "Got a gift card!",
+        "Couldn't resist",
+        "It wasn't on sale, but...",
+        "I wanted to revist these.",
+    ];
+
     pub fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         commands.insert_resource(ShownDialog(None));
 
@@ -20,9 +30,9 @@ impl ShownDialog {
                 DialogBox,
                 SpriteBundle {
                     sprite: Sprite {
-                      custom_size: Some(Vec2::new(290., 22.)),
-                      color: Color::DARK_GRAY,
-                      ..default()
+                        custom_size: Some(Vec2::new(290., 22.)),
+                        color: Color::DARK_GRAY,
+                        ..default()
                     },
                     transform: Transform::from_xyz(0., 0., 50.),
                     ..default()
@@ -70,5 +80,10 @@ impl ShownDialog {
         } else {
             *dialog_box.single_mut() = Visibility::Hidden;
         }
+    }
+
+    pub fn new_random(rng: &mut GlobalEntropy<ChaCha8Rng>) -> Self {
+        let i = ((rng.next_u32() as f32 / u32::MAX as f32) * Self::DIALOGS.len() as f32 - 0.5).round() as usize;
+        Self(Some(Self::DIALOGS[i]))
     }
 }
