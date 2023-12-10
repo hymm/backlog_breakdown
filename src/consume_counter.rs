@@ -1,13 +1,37 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use bevy_vector_shapes::prelude::*;
 
 #[derive(Resource, Default)]
 pub struct ConsumeCount {
     pub total: u32,
-    pub books: u32,
-    pub comics: u32,
-    pub movies: u32,
-    pub games: u32,
+    pub books: ConsumeTypeCount,
+    pub comics: ConsumeTypeCount,
+    pub movies: ConsumeTypeCount,
+    pub games: ConsumeTypeCount,
+}
+
+#[derive(Default)]
+pub struct ConsumeTypeCount {
+    pub total: u32,
+    pub items: HashMap<usize, u32>,
+}
+
+impl ConsumeTypeCount {
+    pub fn favorite(&self) -> Option<usize> {
+        let favorite = self.items.iter().fold((None, 0), |(max_key, max_value), (key, value)| {
+            if max_key.is_some() {
+                if *value > max_value {
+                    (Some(*key), *value)
+                } else {
+                    (max_key, max_value)
+                }
+            } else {
+                (Some(*key), *value)
+            }
+        });
+
+        favorite.0
+    }
 }
 
 #[derive(Component)]
@@ -18,8 +42,6 @@ pub struct CounterText;
 
 impl CounterMarker {
     pub fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
-        commands.insert_resource(ConsumeCount::default());
-
         commands
             .spawn((
                 CounterMarker,

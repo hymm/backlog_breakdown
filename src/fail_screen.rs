@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game_state::GameState;
+use crate::{consume_counter::ConsumeCount, game_state::GameState, item::ItemHandles};
 
 pub struct FailScreenPlugin;
 impl Plugin for FailScreenPlugin {
@@ -13,7 +13,12 @@ impl Plugin for FailScreenPlugin {
 #[derive(Component)]
 struct FailMarker;
 
-fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    counts: Res<ConsumeCount>,
+    handles: Res<ItemHandles>,
+) {
     commands
         .spawn((
             FailMarker,
@@ -23,6 +28,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                     height: Val::Percent(100.0),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
                     ..default()
                 },
                 ..default()
@@ -40,6 +46,79 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                     },
                 ),
             ));
+
+            children.spawn((
+                FailMarker,
+                TextBundle::from_section(
+                    format!(
+                        "Total: {}\nBooks: {}\nMovies: {}\nGames: {}\nComics: {}",
+                        counts.total,
+                        counts.books.total,
+                        counts.movies.total,
+                        counts.games.total,
+                        counts.comics.total
+                    ),
+                    TextStyle {
+                        font: asset_server.load("chevyray_bird_seed.ttf"),
+                        font_size: 20.0,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                    },
+                ),
+            ));
+
+            children
+                .spawn((
+                    FailMarker,
+                    NodeBundle {
+                        style: Style {
+                            row_gap: Val::Px(12.),
+                            column_gap: Val::Px(12.),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                ))
+                .with_children(|children| {
+                    if let Some(index) = counts.books.favorite() {
+                        children.spawn(ImageBundle {
+                            image: UiImage {
+                                texture: handles.books[index].queue_handle.clone(),
+                                ..default()
+                            },
+                            ..default()
+                        });
+                    }
+
+                    if let Some(index) = counts.movies.favorite() {
+                        children.spawn(ImageBundle {
+                            image: UiImage {
+                                texture: handles.movies[index].queue_handle.clone(),
+                                ..default()
+                            },
+                            ..default()
+                        });
+                    }
+
+                    if let Some(index) = counts.games.favorite() {
+                        children.spawn(ImageBundle {
+                            image: UiImage {
+                                texture: handles.games[index].queue_handle.clone(),
+                                ..default()
+                            },
+                            ..default()
+                        });
+                    }
+
+                    if let Some(index) = counts.comics.favorite() {
+                        children.spawn(ImageBundle {
+                            image: UiImage {
+                                texture: handles.comics[index].queue_handle.clone(),
+                                ..default()
+                            },
+                            ..default()
+                        });
+                    }
+                });
         });
 }
 

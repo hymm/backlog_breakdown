@@ -151,36 +151,20 @@ impl ItemHandles {
                 stack_handle: asset_server.load(format!("Books/Book{i}_side.png")),
                 queue_handle: asset_server.load(format!("Books/Book{i}_cover.png")),
             });
-            books.push(ItemHandle {
-                stack_handle: asset_server.load(format!("Blank Books/Book{i}_side_blank.png")),
-                queue_handle: asset_server.load(format!("Blank Books/Book{i}_cover_blank.png")),
-            });
 
             movies.push(ItemHandle {
                 stack_handle: asset_server.load(format!("Movies/Movie{i}_side.png")),
                 queue_handle: asset_server.load(format!("Movies/Movie{i}_cover.png")),
-            });
-            movies.push(ItemHandle {
-                stack_handle: asset_server.load(format!("Blank Movies/Movie{i}_side_blank.png")),
-                queue_handle: asset_server.load(format!("Blank Movies/Movie{i}_cover_blank.png")),
             });
 
             games.push(ItemHandle {
                 stack_handle: asset_server.load(format!("Games/Game{i}_side.png")),
                 queue_handle: asset_server.load(format!("Games/Game{i}_cover.png")),
             });
-            games.push(ItemHandle {
-                stack_handle: asset_server.load(format!("Blank Games/Game{i}_side_blank.png")),
-                queue_handle: asset_server.load(format!("Blank Games/Game{i}_cover_blank.png")),
-            });
 
             comics.push(ItemHandle {
                 stack_handle: asset_server.load(format!("Comics/Comic{i}_side.png")),
                 queue_handle: asset_server.load(format!("Comics/Comic{i}_cover.png")),
-            });
-            comics.push(ItemHandle {
-                stack_handle: asset_server.load(format!("Blank Comics/Comic{i}_side.png")),
-                queue_handle: asset_server.load(format!("Blank Comics/Comic{i}_cover.png")),
             });
         }
 

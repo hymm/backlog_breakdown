@@ -7,7 +7,7 @@ use bevy::{
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
-use crate::{consume_counter::ConsumeCount, item::ItemType, stress::{EmitStress, StressPopupText}, Sfx};
+use crate::{consume_counter::ConsumeCount, item::{ItemType, ItemHandleIndex}, stress::{EmitStress, StressPopupText}, Sfx};
 
 #[derive(Component)]
 pub struct InQueue;
@@ -138,12 +138,12 @@ pub fn check_active(mut commands: Commands, active_query: Query<(), With<ActiveI
 
 pub fn consume_active(
     mut commands: Commands,
-    mut active_query: Query<(Entity, &ItemType, &mut ActiveItem, &GlobalTransform)>,
+    mut active_query: Query<(Entity, &ItemType, &ItemHandleIndex, &mut ActiveItem, &GlobalTransform)>,
     time: Res<Time>,
     mut consumed: ResMut<ConsumeCount>,
     sfx: Res<Sfx>,
 ) {
-    let Ok((e, item_type, mut timer, t)) = active_query.get_single_mut() else {
+    let Ok((e, item_type, item_handle, mut timer, t)) = active_query.get_single_mut() else {
         return;
     };
     if timer.0.tick(time.delta()).just_finished() {
@@ -158,12 +158,14 @@ pub fn consume_active(
             ..default()
         });
         consumed.total += 1;
-        match item_type {
-            ItemType::Book => consumed.books += 1,
-            ItemType::Movie => consumed.movies += 1,
-            ItemType::Game => consumed.games += 1,
-            ItemType::Comic => consumed.comics += 1,
-        }
+        let item_totals = match item_type {
+            ItemType::Book => &mut consumed.books,
+            ItemType::Movie => &mut consumed.movies,
+            ItemType::Game => &mut consumed.games,
+            ItemType::Comic => &mut consumed.comics,
+        };
+        item_totals.total += 1;
+        item_totals.items.entry(item_handle.0).and_modify(|c| *c += 1).or_insert(1);
     }
 }
 

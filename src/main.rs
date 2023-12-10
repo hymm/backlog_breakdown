@@ -21,7 +21,7 @@ use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
 use bevy_vector_shapes::Shape2dPlugin;
-use consume_counter::CounterMarker;
+use consume_counter::{ConsumeCount, CounterMarker};
 use dialog::ShownDialog;
 use fail_screen::FailScreenPlugin;
 use game_state::GameState;
@@ -37,6 +37,7 @@ fn main() {
         .add_state::<GameState>()
         .insert_resource(StackPenalty(0.))
         .insert_resource(AssetMetaCheck::Never)
+        .insert_resource(ConsumeCount::default())
         .add_plugins((
             DefaultPlugins
                 .set(WindowPlugin {
@@ -54,21 +55,18 @@ fn main() {
             Shape2dPlugin::default(),
             SpawningPlugin,
         ))
-        .add_systems(Startup, spawn_camera)
+        .add_systems(Startup, (spawn_camera, ItemHandles::load_handles))
         .add_plugins((StartScreenPlugin, FailScreenPlugin))
         .add_systems(
             OnEnter(GameState::Playing),
-            (
-                ItemHandles::load_handles,
-                (
-                    setup,
-                    StressMeter::spawn,
-                    spawn_button,
-                    CounterMarker::spawn,
-                    ShownDialog::spawn,
-                    BackgroundMusic::spawn,
-                ),
-            )
+            ((
+                setup,
+                StressMeter::spawn,
+                spawn_button,
+                CounterMarker::spawn,
+                ShownDialog::spawn,
+                BackgroundMusic::spawn,
+            ),)
                 .chain(),
         )
         .add_systems(
