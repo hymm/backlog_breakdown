@@ -3,6 +3,7 @@ use std::{collections::VecDeque, f32::consts::PI};
 use bevy::{
     ecs::system::{Command, EntityCommand},
     prelude::*,
+    sprite::Anchor,
 };
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
@@ -40,7 +41,9 @@ impl Queue {
                 PickableBundle::default(),
                 Queue::default(),
                 On::<Pointer<Drop>>::commands_mut(move |event, commands| {
-                    commands.entity(event.dropped).add(AddToQueue);
+                    if let Some(ref mut e) = commands.get_entity(event.dropped) {
+                        e.add(AddToQueue);
+                    }
                 }),
             ))
             .with_children(|children| {
@@ -51,7 +54,7 @@ impl Queue {
                 },));
             });
 
-        ConsumeActive::spawn(&mut commands);
+        ConsumeActive::spawn(&mut commands, &asset_server);
     }
 }
 
@@ -94,24 +97,61 @@ pub fn in_queue_transforms(
     }
 }
 
+#[derive(Component)]
+pub struct ConsumeMeter;
+
 /// visual for active item
 #[derive(Component)]
 pub struct ConsumeActive;
 
 impl ConsumeActive {
-    pub fn spawn(commands: &mut Commands) {
-        commands.spawn((
-            ConsumeActive,
-            SpriteBundle {
-                sprite: Sprite {
-                    color: Color::BLUE.with_a(0.),
-                    custom_size: Some(Vec2::new(50., 50.)),
+    pub fn spawn(commands: &mut Commands, asset_server: &AssetServer) {
+        commands
+            .spawn((
+                ConsumeActive,
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::BLUE.with_a(0.),
+                        custom_size: Some(Vec2::new(50., 50.)),
+                        ..default()
+                    },
+                    transform: Transform::from_xyz(98., -130., 0.),
                     ..default()
                 },
-                transform: Transform::from_xyz(98., -130., 0.),
-                ..default()
-            },
-        ));
+            ))
+            .with_children(|children| {
+                children
+                    .spawn(SpriteBundle {
+                        texture: asset_server.load("meter_consume.png"),
+                        transform: Transform::from_xyz(54., 0., 2.),
+                        ..default()
+                    })
+                    .with_children(|children| {
+                        children.spawn((ConsumeMeter, SpriteBundle {
+                            sprite: Sprite {
+                                custom_size: Some(Vec2::new(10., 1.)),
+                                color: Color::GREEN,
+                                anchor: Anchor::BottomCenter,
+                                ..default()
+                            },
+                            transform: Transform::from_xyz(0., -25., -0.1),
+                            ..default()
+                        }));
+                    });
+
+                children.spawn(Text2dBundle {
+                    text: Text::from_section(
+                        "DRAG\nHERE",
+                        TextStyle {
+                            font: asset_server.load("chevyray_bird_seed.ttf"),
+                            font_size: 12.,
+                            color: Color::WHITE,
+                        },
+                    ),
+                    transform: Transform::from_xyz(0., 0., 0.5),
+                    ..default()
+                });
+            });
     }
 }
 
@@ -136,7 +176,7 @@ impl Command for PopQueue {
         let mut e = world.entity_mut(active_item);
         let item_type = *e.get::<ItemType>().unwrap();
         let mut transform = e.get_mut::<Transform>().unwrap();
-        transform.translation = active_slot_translation;
+        transform.translation = active_slot_translation + Vec3::Z;
         e.remove::<InQueue>().insert(ActiveItem(Timer::new(
             item_type.consume_time(),
             TimerMode::Once,
@@ -194,23 +234,16 @@ pub fn consume_active(
 }
 
 pub fn draw_timer(
-    mut painter: ShapePainter,
     active_query: Query<&mut ActiveItem>,
-    active_slot: Query<&GlobalTransform, With<ConsumeActive>>,
+    mut consume_meter: Query<&mut Sprite, With<ConsumeMeter>>,
 ) {
     let Ok(timer) = active_query.get_single() else {
         return;
     };
-    let Ok(transform) = active_slot.get_single() else {
-        return;
-    };
-
+    
     let fraction_left = timer.0.elapsed_secs() / timer.0.duration().as_secs_f32();
 
-    painter.translate(transform.translation().xy().extend(3.));
-    painter.thickness = 0.5;
-    painter.hollow = false;
-    painter.color = Color::rgba_u8(0, 0, 0, 180);
-    painter.cap = Cap::None;
-    painter.arc(20., 0., 2. * PI * fraction_left);
+    let mut sprite = consume_meter.single_mut();
+    let Some(ref mut size) = sprite.custom_size else { return; };
+    size.y = 51. * (1. - fraction_left);
 }
