@@ -1,12 +1,16 @@
 use std::f32::consts::PI;
 
-use bevy::{ecs::system::Command, prelude::*};
+use bevy::{
+    audio::{Volume, VolumeLevel},
+    prelude::*,
+};
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
 use crate::{
     stack::{SpawnEvent, StackPenalty},
     stress::EmitStress,
+    Sfx,
 };
 
 pub struct SpawningPlugin;
@@ -70,12 +74,20 @@ pub fn check_timer(
     mut today: ResMut<TodayTimer>,
     time: Res<Time>,
     stack_penalty: Res<StackPenalty>,
+    sfx: Res<Sfx>,
 ) {
     if today.timer.tick(time.delta()).finished() {
         let click_penalty = if today.clicked_today {
             today.clicked_today = false;
             2.
         } else {
+            commands.spawn(AudioBundle {
+                source: sfx.no_click.clone(),
+                settings: PlaybackSettings {
+                    volume: Volume::Relative(VolumeLevel::new(0.5)),
+                    ..default()
+                },
+            });
             5.
         };
         commands.add(EmitStress(click_penalty + stack_penalty.0))

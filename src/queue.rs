@@ -7,7 +7,7 @@ use bevy::{
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
-use crate::{consume_counter::ConsumeCount, item::ItemType, stress::EmitStress};
+use crate::{consume_counter::ConsumeCount, item::ItemType, stress::EmitStress, Sfx};
 
 #[derive(Component)]
 pub struct InQueue;
@@ -139,6 +139,7 @@ pub fn consume_active(
     mut active_query: Query<(Entity, &ItemType, &mut ActiveItem)>,
     time: Res<Time>,
     mut consumed: ResMut<ConsumeCount>,
+    sfx: Res<Sfx>,
 ) {
     let Ok((e, item_type, mut timer)) = active_query.get_single_mut() else {
         return;
@@ -146,6 +147,10 @@ pub fn consume_active(
     if timer.0.tick(time.delta()).just_finished() {
         commands.add(EmitStress(-1.));
         commands.entity(e).despawn();
+        commands.spawn(AudioBundle {
+            source: sfx.consume.clone(),
+            ..default()
+        });
         consumed.total += 1;
         match item_type {
             ItemType::Book => consumed.books += 1,

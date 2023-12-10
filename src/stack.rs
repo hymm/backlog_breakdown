@@ -12,7 +12,7 @@ use crate::{
     dialog::ShownDialog,
     item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
     queue::{ActiveItem, InQueue},
-    stress::StressMeter, spawning::TodayTimer,
+    stress::StressMeter, spawning::TodayTimer, Sfx,
 };
 
 #[derive(Component, Default)]
@@ -319,6 +319,12 @@ impl Command for SpawnEvent {
 
         let mut today = world.resource_mut::<TodayTimer>();
         today.clicked_today = true;
+
+        let source = world.resource::<Sfx>().buy.clone();
+        world.spawn(AudioBundle {
+            source,
+            ..default()
+        });
     }
 }
 

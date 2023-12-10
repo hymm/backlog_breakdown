@@ -99,8 +99,21 @@ fn main() {
         .run();
 }
 
-fn spawn_camera(mut commands: Commands) {
+#[derive(Resource)]
+pub struct Sfx {
+    no_click: Handle<AudioSource>,
+    buy: Handle<AudioSource>,
+    consume: Handle<AudioSource>,
+}
+
+fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
+
+    commands.insert_resource(Sfx {
+        no_click: asset_server.load("sfx/no-click.ogg"),
+        buy: asset_server.load("sfx/buy.ogg"),
+        consume: asset_server.load("sfx/consume.ogg"),
+    });
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
