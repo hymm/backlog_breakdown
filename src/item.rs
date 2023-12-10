@@ -34,7 +34,7 @@ impl ItemBundle {
                     ..default()
                 },
                 texture,
-                transform: Transform::from_xyz(0., 0., 1.),
+                transform: Transform::from_xyz(0., 0., 100.),
                 ..default()
             },
             item_type,
