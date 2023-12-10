@@ -54,7 +54,8 @@ impl Stack {
                     ..default()
                 },
                 On::<Pointer<Drop>>::commands_mut(move |event, commands| {
-                    commands.entity(event.dropped).add(AddToStack(event.target));
+                    let Some(ref mut entity_commands) = commands.get_entity(event.dropped) else { return; };
+                    entity_commands.add(AddToStack(event.target));
                 }),
             ))
             .with_children(|children| {
@@ -245,7 +246,7 @@ impl Command for SpawnEvent {
         let event = ((r.next_u32() as f32 / u32::MAX as f32) * 10. - 0.5).round() as usize == 1;
         if event {
             let event_size =
-                ((r.next_u32() as f32 / u32::MAX as f32) * 10. - 0.5).round() as usize + 1;
+                ((r.next_u32() as f32 / u32::MAX as f32) * 5. - 0.5).round() as usize + 4;
             for _ in 0..event_size {
                 let mut r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>();
                 let dialog = ShownDialog::new_random(&mut r);
