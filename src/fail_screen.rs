@@ -24,8 +24,8 @@ fn spawn(
             FailMarker,
             NodeBundle {
                 style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
                     flex_direction: FlexDirection::Column,
@@ -41,7 +41,7 @@ fn spawn(
                     "You Collapsed from Stress!",
                     TextStyle {
                         font: asset_server.load("chevyray_bird_seed.ttf"),
-                        font_size: 40.0,
+                        font_size: 20.0,
                         color: Color::rgb(0.9, 0.9, 0.9),
                     },
                 ),
@@ -80,44 +80,87 @@ fn spawn(
                 ))
                 .with_children(|children| {
                     if let Some(index) = counts.books.favorite() {
-                        children.spawn(ImageBundle {
-                            image: UiImage {
-                                texture: handles.books[index].queue_handle.clone(),
+                        children.spawn((
+                            FailMarker,
+                            ImageBundle {
+                                image: UiImage {
+                                    texture: handles.books[index].queue_handle.clone(),
+                                    ..default()
+                                },
                                 ..default()
                             },
-                            ..default()
-                        });
+                        ));
                     }
 
                     if let Some(index) = counts.movies.favorite() {
-                        children.spawn(ImageBundle {
-                            image: UiImage {
-                                texture: handles.movies[index].queue_handle.clone(),
+                        children.spawn((
+                            FailMarker,
+                            ImageBundle {
+                                image: UiImage {
+                                    texture: handles.movies[index].queue_handle.clone(),
+                                    ..default()
+                                },
                                 ..default()
                             },
-                            ..default()
-                        });
+                        ));
                     }
 
                     if let Some(index) = counts.games.favorite() {
-                        children.spawn(ImageBundle {
-                            image: UiImage {
-                                texture: handles.games[index].queue_handle.clone(),
+                        children.spawn((
+                            FailMarker,
+                            ImageBundle {
+                                image: UiImage {
+                                    texture: handles.games[index].queue_handle.clone(),
+                                    ..default()
+                                },
                                 ..default()
                             },
-                            ..default()
-                        });
+                        ));
                     }
 
                     if let Some(index) = counts.comics.favorite() {
-                        children.spawn(ImageBundle {
-                            image: UiImage {
-                                texture: handles.comics[index].queue_handle.clone(),
+                        children.spawn((
+                            FailMarker,
+                            ImageBundle {
+                                image: UiImage {
+                                    texture: handles.comics[index].queue_handle.clone(),
+                                    ..default()
+                                },
                                 ..default()
                             },
-                            ..default()
-                        });
+                        ));
                     }
+                });
+
+            children
+                .spawn((
+                    FailMarker,
+                    ButtonBundle {
+                        style: Style {
+                            width: Val::Px(200.0),
+                            height: Val::Px(40.0),
+                            // horizontally center child text
+                            justify_content: JustifyContent::Center,
+                            // vertically center child text
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        background_color: Color::DARK_GRAY.into(),
+                        ..default()
+                    },
+                ))
+                .with_children(|parent| {
+                    parent.spawn((
+                        FailMarker,
+                        TextBundle::from_section(
+                            "Click to Replay",
+                            TextStyle {
+                                font: asset_server.load("chevyray_bird_seed.ttf"),
+                                font_size: 20.0,
+                                color: Color::rgb(0.9, 0.9, 0.9),
+                            },
+                        ),
+                    ));
                 });
         });
 }
