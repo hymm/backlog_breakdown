@@ -30,7 +30,7 @@ use queue::{check_active, consume_active, draw_timer};
 use spawning::{check_timer, draw_button, spawn_button, SpawningPlugin};
 use stack::{check_stack, restack, stack_items, Stack, StackPenalty};
 use start_screen::StartScreenPlugin;
-use stress::{fail_state, StressMeter};
+use stress::{fail_state, StressMeter, StressText};
 
 fn main() {
     App::new()
@@ -83,6 +83,7 @@ fn main() {
                 check_stack,
                 CounterMarker::update_counter,
                 ShownDialog::handle_visibility,
+                StressText::animate_text,
                 (check_timer, draw_button).chain(),
             )
                 .run_if(in_state(GameState::Playing)),

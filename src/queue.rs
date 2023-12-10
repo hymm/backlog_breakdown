@@ -7,7 +7,7 @@ use bevy::{
 use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
-use crate::{consume_counter::ConsumeCount, item::ItemType, stress::EmitStress, Sfx};
+use crate::{consume_counter::ConsumeCount, item::ItemType, stress::{EmitStress, StressPopupText}, Sfx};
 
 #[derive(Component)]
 pub struct InQueue;
@@ -136,16 +136,20 @@ pub fn check_active(mut commands: Commands, active_query: Query<(), With<ActiveI
 
 pub fn consume_active(
     mut commands: Commands,
-    mut active_query: Query<(Entity, &ItemType, &mut ActiveItem)>,
+    mut active_query: Query<(Entity, &ItemType, &mut ActiveItem, &GlobalTransform)>,
     time: Res<Time>,
     mut consumed: ResMut<ConsumeCount>,
     sfx: Res<Sfx>,
 ) {
-    let Ok((e, item_type, mut timer)) = active_query.get_single_mut() else {
+    let Ok((e, item_type, mut timer, t)) = active_query.get_single_mut() else {
         return;
     };
     if timer.0.tick(time.delta()).just_finished() {
         commands.add(EmitStress(-1.));
+        commands.add(StressPopupText {
+            spawn_origin: t.translation() + 33. * Vec3::Y,
+            stress_value: -1.,
+        });
         commands.entity(e).despawn();
         commands.spawn(AudioBundle {
             source: sfx.consume.clone(),

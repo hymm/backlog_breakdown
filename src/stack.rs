@@ -12,7 +12,9 @@ use crate::{
     dialog::ShownDialog,
     item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
     queue::{ActiveItem, InQueue},
-    stress::StressMeter, spawning::TodayTimer, Sfx,
+    spawning::TodayTimer,
+    stress::{StressMeter, StressPopupText},
+    Sfx,
 };
 
 #[derive(Component, Default)]
@@ -325,6 +327,13 @@ impl Command for SpawnEvent {
             source,
             ..default()
         });
+        StressPopupText::apply(
+            StressPopupText {
+                spawn_origin: Vec3::new(255., 149., 10.),
+                stress_value: -1.,
+            },
+            world,
+        );
     }
 }
 

@@ -9,7 +9,7 @@ use bevy_vector_shapes::prelude::*;
 
 use crate::{
     stack::{SpawnEvent, StackPenalty},
-    stress::EmitStress,
+    stress::{EmitStress, StressPopupText},
     Sfx,
 };
 
@@ -75,6 +75,7 @@ pub fn check_timer(
     time: Res<Time>,
     stack_penalty: Res<StackPenalty>,
     sfx: Res<Sfx>,
+    button: Query<&GlobalTransform, With<CircleButton>>,
 ) {
     if today.timer.tick(time.delta()).finished() {
         let click_penalty = if today.clicked_today {
@@ -90,7 +91,12 @@ pub fn check_timer(
             });
             5.
         };
-        commands.add(EmitStress(click_penalty + stack_penalty.0))
+        let stress_value = click_penalty + stack_penalty.0;
+        commands.add(EmitStress(stress_value));
+        commands.add(StressPopupText {
+            spawn_origin: button.single().translation() - 35. * Vec3::X,
+            stress_value,
+        });
     }
 }
 
