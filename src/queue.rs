@@ -56,7 +56,9 @@ impl EntityCommand for AddToQueue {
             return;
         }
         queue.items.push_back(id);
-        world.entity_mut(id).insert((InQueue, Pickable::IGNORE));
+        let mut e = world.entity_mut(id);
+        e.insert((InQueue, Pickable::IGNORE));
+        e.get_mut::<Transform>().unwrap().translation.z = 100.0;
     }
 }
 

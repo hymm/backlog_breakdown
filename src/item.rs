@@ -57,6 +57,7 @@ impl ItemBundle {
             on_drag: On::<Pointer<Drag>>::target_component_mut::<Transform>(|drag, transform| {
                 transform.translation.x += drag.delta.x; // Make the square follow the mouse
                 transform.translation.y -= drag.delta.y;
+                transform.translation.z = 101.0;
             }),
         }
     }
@@ -80,18 +81,9 @@ impl ItemType {
             ItemType::Book => Vec2::new(65., 17.),
             ItemType::Movie => Vec2::new(65., 10.),
             ItemType::Game => Vec2::new(65., 12.),
-            ItemType::Comic => Vec2::new(65., 8.),
+            ItemType::Comic => Vec2::new(43., 8.),
         }
     }
-
-    // pub fn queue_dimensions(&self) -> Vec2 {
-    //     match self {
-    //         ItemType::Book => Vec2::new(45., 60.),
-    //         ItemType::Movie => Vec2::new(37., 49.),
-    //         ItemType::Game => Vec2::new(34., 55.),
-    //         ItemType::Comic => Vec2::new(33., 43.),
-    //     }
-    // }
 
     pub fn label(&self) -> &'static str {
         match self {
@@ -128,6 +120,15 @@ impl ItemType {
             ItemType::Comic => handles.comics[index].queue_handle.clone(),
         }
     }
+
+    pub fn get_handles_max(&self, handles: &ItemHandles) -> usize {
+        match self {
+            ItemType::Book => handles.books.len(),
+            ItemType::Movie => handles.movies.len(),
+            ItemType::Game => handles.games.len(),
+            ItemType::Comic => handles.comics.len(),
+        }
+    }
 }
 
 #[derive(Resource)]
@@ -145,22 +146,41 @@ impl ItemHandles {
         let mut comics = vec![];
         let mut games = vec![];
 
-        for i in 1..=5 {
+        for i in 1..=25 {
             books.push(ItemHandle {
-                stack_handle: asset_server.load(format!("Book{i}_side.png")),
-                queue_handle: asset_server.load(format!("Book{i}_cover.png")),
+                stack_handle: asset_server.load(format!("Books/Book{i}_side.png")),
+                queue_handle: asset_server.load(format!("Books/Book{i}_cover.png")),
+            });
+            books.push(ItemHandle {
+                stack_handle: asset_server.load(format!("Blank Books/Book{i}_side_blank.png")),
+                queue_handle: asset_server.load(format!("Blank Books/Book{i}_cover_blank.png")),
+            });
+
+            movies.push(ItemHandle {
+                stack_handle: asset_server.load(format!("Movies/Movie{i}_side.png")),
+                queue_handle: asset_server.load(format!("Movies/Movie{i}_cover.png")),
             });
             movies.push(ItemHandle {
-                stack_handle: asset_server.load(format!("Movie{i}_side.png")),
-                queue_handle: asset_server.load(format!("Movie{i}_cover.png")),
+                stack_handle: asset_server.load(format!("Blank Movies/Movie{i}_side_blank.png")),
+                queue_handle: asset_server.load(format!("Blank Movies/Movie{i}_cover_blank.png")),
             });
-            comics.push(ItemHandle {
-                stack_handle: asset_server.load(format!("Comic{i}_side.png")),
-                queue_handle: asset_server.load(format!("Comic{i}_cover.png")),
+
+            games.push(ItemHandle {
+                stack_handle: asset_server.load(format!("Games/Game{i}_side.png")),
+                queue_handle: asset_server.load(format!("Games/Game{i}_cover.png")),
             });
             games.push(ItemHandle {
-                stack_handle: asset_server.load(format!("Game{i}_side.png")),
-                queue_handle: asset_server.load(format!("Game{i}_cover.png")),
+                stack_handle: asset_server.load(format!("Blank Games/Game{i}_side_blank.png")),
+                queue_handle: asset_server.load(format!("Blank Games/Game{i}_cover_blank.png")),
+            });
+
+            comics.push(ItemHandle {
+                stack_handle: asset_server.load(format!("Comics/Comic{i}_side.png")),
+                queue_handle: asset_server.load(format!("Comics/Comic{i}_cover.png")),
+            });
+            comics.push(ItemHandle {
+                stack_handle: asset_server.load(format!("Blank Comics/Comic{i}_side.png")),
+                queue_handle: asset_server.load(format!("Blank Comics/Comic{i}_cover.png")),
             });
         }
 

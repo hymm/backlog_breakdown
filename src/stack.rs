@@ -220,7 +220,8 @@ impl Command for SpawnOn {
         };
 
         let offset = ((rng.next_u32() as f32 / u32::MAX as f32) - 0.5) * 7.;
-        let item_index = ((rng.next_u32() as f64 / u32::MAX as f64) * 5. - 0.5).round() as usize;
+        let item_total = self.item_type.get_handles_max(&handles);
+        let item_index = ((rng.next_u32() as f64 / u32::MAX as f64) * item_total as f64 - 0.5).round() as usize;
         let new_item = commands
             .spawn(ItemBundle::new(
                 self.item_type,
@@ -349,6 +350,7 @@ fn stack_item(world: &mut World, id: Entity, stack: Entity) -> ItemType {
     e.insert(InStack(stack));
     *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
     e.get_mut::<Sprite>().unwrap().anchor = Anchor::BottomCenter;
+    e.get_mut::<Transform>().unwrap().translation.z = 100.0;
 
     t
 }

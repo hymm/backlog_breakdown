@@ -10,7 +10,7 @@ use bevy_vector_shapes::prelude::*;
 use crate::{
     stack::{SpawnEvent, StackPenalty},
     stress::{EmitStress, StressPopupText},
-    Sfx, dialog::{DialogBox, DialogText, ShownDialog},
+    Sfx,
 };
 
 pub struct SpawningPlugin;
@@ -61,9 +61,16 @@ pub fn spawn_button(mut commands: Commands, asset_server: Res<AssetServer>) {
                 20.,
             ));
 
-            children.spawn(SpriteBundle {
+            children.spawn(Text2dBundle {
+                text: Text::from_section(
+                    "BUY",
+                    TextStyle {
+                        font: asset_server.load("chevyray_bird_seed.ttf"),
+                        font_size: 14.,
+                        color: Color::BLACK,
+                    },
+                ),
                 transform: Transform::from_xyz(0., 0., 1.),
-                texture: asset_server.load("Sale_icon.png"),
                 ..default()
             });
         });
