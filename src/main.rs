@@ -5,6 +5,7 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
 mod consume_counter;
+mod dialog;
 mod fail_screen;
 mod game_state;
 mod item;
@@ -21,6 +22,7 @@ use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
 use bevy_vector_shapes::Shape2dPlugin;
 use consume_counter::CounterMarker;
+use dialog::ShownDialog;
 use fail_screen::FailScreenPlugin;
 use game_state::GameState;
 use item::{ItemHandles, ItemType};
@@ -61,6 +63,7 @@ fn main() {
                     StressMeter::spawn,
                     spawn_button,
                     CounterMarker::spawn,
+                    ShownDialog::spawn,
                 ),
             )
                 .chain(),
@@ -78,13 +81,18 @@ fn main() {
                 fail_state,
                 check_stack,
                 CounterMarker::update_counter,
+                ShownDialog::handle_visibility,
                 (check_timer, draw_button).chain(),
             )
                 .run_if(in_state(GameState::Playing)),
         )
         .add_systems(
             OnExit(GameState::Playing),
-            (despawn_playing, CounterMarker::despawn),
+            (
+                despawn_playing,
+                CounterMarker::despawn,
+                ShownDialog::despawn,
+            ),
         )
         .run();
 }

@@ -5,7 +5,7 @@ use bevy_mod_picking::prelude::*;
 use bevy_vector_shapes::prelude::*;
 
 use crate::{
-    stack::{SpawnRandom, StackPenalty},
+    stack::{SpawnEvent, StackPenalty},
     stress::EmitStress,
 };
 
@@ -43,7 +43,7 @@ pub fn spawn_button(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             PickableBundle::default(),
             On::<Pointer<Click>>::commands_mut(|_, commands| {
-                commands.add(SpawnRandom);
+                commands.add(SpawnEvent);
                 commands.add(ClickedToday);
                 commands.add(EmitStress(-1.));
             }),

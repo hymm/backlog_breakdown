@@ -4,13 +4,13 @@ use bevy::{
     sprite::Anchor,
 };
 use bevy_mod_picking::prelude::*;
-use bevy_vector_shapes::prelude::*;
 use bevy_rand::prelude::*;
+use bevy_vector_shapes::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
     item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
-    queue::{ActiveItem, InQueue},
+    queue::{ActiveItem, InQueue}, dialog::ShownDialog,
 };
 
 #[derive(Component, Default)]
@@ -63,11 +63,14 @@ impl Stack {
                         transform: Transform::from_xyz(0., -12., 0.5),
                         ..default()
                     },
-                    ..ShapeBundle::rect(&ShapeConfig {
-                        color: Color::rgb_u8(217, 155, 150),
-                        corner_radii: Vec4::splat(8.),
-                        ..ShapeConfig::default_2d()
-                    }, Vec2::new(60., 14.))
+                    ..ShapeBundle::rect(
+                        &ShapeConfig {
+                            color: Color::rgb_u8(217, 155, 150),
+                            corner_radii: Vec4::splat(8.),
+                            ..ShapeConfig::default_2d()
+                        },
+                        Vec2::new(60., 14.),
+                    )
                 });
 
                 children.spawn(Text2dBundle {
@@ -235,6 +238,24 @@ impl Command for SpawnRandom {
     }
 }
 
+pub struct SpawnEvent;
+impl Command for SpawnEvent {
+    fn apply(self, world: &mut World) {
+        let mut r = world.resource_mut::<GlobalEntropy<ChaCha8Rng>>();
+        let event = ((r.next_u32() as f32 / u32::MAX as f32) * 10. - 0.5).round() as usize == 1;
+        if event {
+            let event_size =
+                ((r.next_u32() as f32 / u32::MAX as f32) * 10. - 0.5).round() as usize + 1;
+            for _ in 0..event_size {
+                SpawnRandom::apply(SpawnRandom, world);
+                world.insert_resource(ShownDialog(Some("Something happened!")));
+            }
+        } else {
+            SpawnRandom::apply(SpawnRandom, world);
+        }
+    }
+}
+
 fn stack_item(world: &mut World, id: Entity, stack: Entity) -> ItemType {
     let e = world.entity(id);
     let t = *e.get::<ItemType>().unwrap();
@@ -351,6 +372,4 @@ pub fn check_stack(
     stack_penalty.0 = penalty;
 }
 
-pub fn blink(color_1: Color, color_2: Color, time: f32) {
-
-}
+pub fn blink(color_1: Color, color_2: Color, time: f32) {}
