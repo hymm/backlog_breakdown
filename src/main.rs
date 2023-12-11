@@ -21,7 +21,6 @@ use bevy::window::WindowResolution;
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
-use bevy_vector_shapes::Shape2dPlugin;
 use consume_counter::{ConsumeCount, CounterMarker};
 use dialog::ShownDialog;
 use fail_screen::FailScreenPlugin;
@@ -54,7 +53,6 @@ fn main() {
                 .build()
                 .disable::<DebugPickingPlugin>(),
             EntropyPlugin::<ChaCha8Rng>::default(),
-            Shape2dPlugin::default(),
             SpawningPlugin,
         ))
         .add_systems(Startup, (spawn_camera, ItemHandles::load_handles))

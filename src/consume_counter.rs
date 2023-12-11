@@ -1,5 +1,4 @@
 use bevy::{prelude::*, utils::HashMap};
-use bevy_vector_shapes::prelude::*;
 
 use crate::layers;
 
@@ -47,19 +46,10 @@ impl CounterMarker {
         commands
             .spawn((
                 CounterMarker,
-                ShapeBundle {
-                    spatial_bundle: SpatialBundle {
-                        transform: Transform::from_xyz(-272., 160., layers::UI),
-                        ..default()
-                    },
-                    ..ShapeBundle::rect(
-                        &ShapeConfig {
-                            color: Color::rgb_u8(108, 58, 70),
-                            corner_radii: Vec4::splat(8.),
-                            ..ShapeConfig::default_2d()
-                        },
-                        Vec2::new(70., 16.),
-                    )
+                SpriteBundle {
+                    texture: asset_server.load("score_box.png"),
+                    transform: Transform::from_xyz(-280., 160., layers::UI),
+                    ..default()
                 },
             ))
             .with_children(|children| {
@@ -70,11 +60,10 @@ impl CounterMarker {
                             "000000",
                             TextStyle {
                                 font: asset_server.load("chevyray_bird_seed.ttf"),
-                                font_size: 16.,
+                                font_size: 13.,
                                 color: Color::WHITE,
                             },
-                        )
-                        .with_alignment(TextAlignment::Right),
+                        ),
                         transform: Transform::from_xyz(0., -2., 1.),
                         ..default()
                     },

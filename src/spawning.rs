@@ -3,14 +3,15 @@ use std::f32::consts::PI;
 use bevy::{
     audio::{Volume, VolumeLevel},
     prelude::*,
+    sprite::MaterialMesh2dBundle,
 };
 use bevy_mod_picking::prelude::*;
-use bevy_vector_shapes::prelude::*;
 
 use crate::{
+    layers,
     stack::{SpawnEvent, StackPenalty},
     stress::{EmitStress, StressPopupText},
-    Sfx, layers,
+    Sfx,
 };
 
 pub struct SpawningPlugin;
@@ -32,7 +33,21 @@ pub struct TodayTimer {
 #[derive(Component)]
 pub struct CircleButton;
 
-pub fn spawn_button(mut commands: Commands, asset_server: Res<AssetServer>) {
+#[derive(Component)]
+pub struct BuyClockHand {
+    bad_material: Handle<ColorMaterial>,
+    happy_material: Handle<ColorMaterial>,
+}
+
+#[derive(Component)]
+pub struct BuyClockKnob;
+
+pub fn spawn_button(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     commands
         .spawn((
             CircleButton,
@@ -51,26 +66,46 @@ pub fn spawn_button(mut commands: Commands, asset_server: Res<AssetServer>) {
             }),
         ))
         .with_children(|children| {
-            children.spawn(ShapeBundle::circle(
-                &ShapeConfig {
-                    color: Color::DARK_GRAY,
-                    thickness: 2.,
-                    hollow: true,
-                    ..ShapeConfig::default_2d()
-                },
-                20.,
-            ));
-
-            children.spawn(Text2dBundle {
-                text: Text::from_section(
-                    "BUY",
-                    TextStyle {
-                        font: asset_server.load("chevyray_bird_seed.ttf"),
-                        font_size: 14.,
-                        color: Color::BLACK,
+            let bad_material = materials.add(ColorMaterial::from(Color::CRIMSON));
+            let happy_material = materials.add(ColorMaterial::from(Color::WHITE));
+            children
+                .spawn((
+                    BuyClockHand {
+                        bad_material,
+                        happy_material: happy_material.clone(),
                     },
-                ),
-                transform: Transform::from_xyz(0., 0., 1.),
+                    MaterialMesh2dBundle {
+                        mesh: meshes.add(shape::Circle::new(19.0).into()).into(),
+                        material: happy_material,
+                        transform: Transform::from_translation(Vec3::new(0., 0., -2.)),
+                        ..default()
+                    },
+                ))
+                .with_children(|children| {
+                    children.spawn((
+                        BuyClockKnob,
+                        MaterialMesh2dBundle {
+                            mesh: meshes.add(shape::Circle::new(2.).into()).into(),
+                            material: materials.add(ColorMaterial::from(Color::rgb(0.7, 0.7, 0.7))),
+                            transform: Transform::from_translation(Vec3::new(0., 16., 1.)),
+                            ..default()
+                        },
+                    ));
+                });
+
+            children.spawn(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::splat(26.)),
+                    ..default()
+                },
+                texture: asset_server.load("buy_button.png"),
+                transform: Transform::from_xyz(0., 0., -1.),
+                ..default()
+            });
+
+            children.spawn(SpriteBundle {
+                texture: asset_server.load("buy_carrot.png"),
+                transform: Transform::from_xyz(0., 21., 0.),
                 ..default()
             });
         });
@@ -107,24 +142,16 @@ pub fn check_timer(
     }
 }
 
-pub fn draw_button(
-    q: Query<&GlobalTransform, With<CircleButton>>,
-    today: Res<TodayTimer>,
-    mut painter: ShapePainter,
-) {
-    let Ok(transform) = q.get_single() else {
-        return;
-    };
+pub fn draw_button(today: Res<TodayTimer>, mut q: Query<(&mut Transform, &BuyClockHand, &mut Handle<ColorMaterial>)>) {
     let fraction_left = today.timer.elapsed_secs() / today.timer.duration().as_secs_f32();
 
-    painter.translate(transform.translation().xy().extend(layers::UI + 9.));
-    // painter.thickness = 0.5;
-    painter.hollow = false;
-    painter.color = if today.clicked_today {
-        Color::WHITE
-    } else {
-        Color::CRIMSON
-    };
-    painter.cap = Cap::None;
-    painter.arc(18., 0., 2. * PI * fraction_left);
+    for (mut t, materials, mut handle) in &mut q {
+        t.rotation = Quat::from_rotation_z(-2. * PI * fraction_left);
+
+        *handle = if today.clicked_today {
+            materials.happy_material.clone()
+        } else {
+            materials.bad_material.clone()
+        };
+    }
 }
