@@ -3,6 +3,8 @@ use bevy_mod_picking::prelude::*;
 use bevy_rand::{prelude::ChaCha8Rng, resource::GlobalEntropy};
 use rand_core::RngCore;
 
+use crate::layers;
+
 #[derive(Component)]
 pub struct DialogBox {
     pub timer: Timer,
@@ -33,7 +35,7 @@ impl ShownDialog {
                 },
                 SpriteBundle {
                     texture: asset_server.load("dialogbox.png"),
-                    transform: Transform::from_xyz(0., 0., 50.),
+                    transform: Transform::from_xyz(0., 0., layers::UI + 50.),
                     ..default()
                 },
                 PickableBundle::default(),

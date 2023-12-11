@@ -9,6 +9,7 @@ mod dialog;
 mod fail_screen;
 mod game_state;
 mod item;
+mod layers;
 mod queue;
 mod spawning;
 mod stack;
@@ -81,6 +82,7 @@ fn main() {
                 consume_active,
                 draw_timer,
                 StressMeter::animate_meter,
+                StressMeter::animate_stress_overlays,
                 fail_state,
                 check_stack,
                 CounterMarker::update_counter,
@@ -119,7 +121,11 @@ fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut rng: ResMut<GlobalEntropy<ChaCha8Rng>>,
+) {
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("background.png"),
@@ -128,7 +134,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         Pickable::IGNORE,
     ));
 
-    Stack::spawn_stacks(&mut commands, &asset_server);
+    Stack::spawn_stacks(&mut commands, &asset_server, &mut rng);
 }
 
 fn despawn_playing(

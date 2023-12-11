@@ -10,6 +10,7 @@ use rand_core::RngCore;
 use crate::{
     dialog::{DialogBox, ShownDialog},
     item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
+    layers,
     queue::{ActiveItem, InQueue},
     spawning::TodayTimer,
     stress::{StressMeter, StressPopupText},
@@ -68,17 +69,15 @@ impl Stack {
             ))
             .with_children(|children| {
                 children
-                    .spawn(
-                        SpriteBundle {
-                            sprite: Sprite {
-                                color: Color::rgb_u8(217, 155, 150),
-                                ..default()
-                            },
-                            texture: asset_server.load("category_box.png"),
-                            transform: Transform::from_xyz(0., -12., 0.5),
+                    .spawn(SpriteBundle {
+                        sprite: Sprite {
+                            color: Color::rgb_u8(217, 155, 150),
                             ..default()
                         },
-                    )
+                        texture: asset_server.load("category_box.png"),
+                        transform: Transform::from_xyz(0., -12., 0.5),
+                        ..default()
+                    })
                     .with_children(|children| {
                         children.spawn(Text2dBundle {
                             text: Text::from_section(
@@ -97,65 +96,74 @@ impl Stack {
             .id()
     }
 
-    pub fn spawn_stacks(commands: &mut Commands, asset_server: &AssetServer) {
+    pub fn spawn_stacks(
+        commands: &mut Commands,
+        asset_server: &AssetServer,
+        rng: &mut GlobalEntropy<ChaCha8Rng>,
+    ) {
         let stack_y = -54.;
         let book_id = Stack::spawn(
             commands,
-            Transform::from_xyz(-187., stack_y, 0.1),
+            Transform::from_xyz(-187., stack_y, layers::BACKGROUND + 0.1),
             ItemType::Book,
             asset_server,
         );
 
         let movie_id = Stack::spawn(
             commands,
-            Transform::from_xyz(-65., stack_y, 0.1),
+            Transform::from_xyz(-65., stack_y, layers::BACKGROUND + 0.1),
             ItemType::Movie,
             asset_server,
         );
 
         let game_id = Stack::spawn(
             commands,
-            Transform::from_xyz(65., stack_y, 0.1),
+            Transform::from_xyz(65., stack_y, layers::BACKGROUND + 0.1),
             ItemType::Game,
             asset_server,
         );
 
         let comic_id = Stack::spawn(
             commands,
-            Transform::from_xyz(187., stack_y, 0.1),
+            Transform::from_xyz(187., stack_y, layers::BACKGROUND + 0.1),
             ItemType::Comic,
             asset_server,
         );
 
         // seed the stacks
-        for _ in 0..3 {
+        for _ in 0..random_usize(rng, 1, 8) {
             commands.add(SpawnOn {
                 item_type: ItemType::Book,
                 stack_entity: book_id,
             });
         }
 
-        for _ in 0..10 {
+        for _ in 0..random_usize(rng, 1, 8) {
             commands.add(SpawnOn {
                 item_type: ItemType::Comic,
                 stack_entity: comic_id,
             });
         }
 
-        for _ in 0..8 {
+        for _ in 0..random_usize(rng, 1, 8) {
             commands.add(SpawnOn {
                 item_type: ItemType::Game,
                 stack_entity: game_id,
             });
         }
 
-        for _ in 0..3 {
+        for _ in 0..random_usize(rng, 1, 8) {
             commands.add(SpawnOn {
                 item_type: ItemType::Movie,
                 stack_entity: movie_id,
             });
         }
     }
+}
+
+fn random_usize(rng: &mut GlobalEntropy<ChaCha8Rng>, min: usize, max: usize) -> usize {
+    let range = max - min;
+    ((rng.next_u64() as f64 / u64::MAX as f64) * range as f64 - 0.5).round() as usize + min
 }
 
 /// Put component on an item to label that it's on a stack
@@ -318,11 +326,9 @@ impl Command for SpawnEvent {
         }
 
         let mut stress_meter = world.query::<&mut StressMeter>();
-        let mut stress_meter = stress_meter.single_mut(world);
-        stress_meter.value -= 1.;
+        stress_meter.single_mut(world).value -= 1.;
 
-        let mut today = world.resource_mut::<TodayTimer>();
-        today.clicked_today = true;
+        world.resource_mut::<TodayTimer>().clicked_today = true;
 
         let source = world.resource::<Sfx>().buy.clone();
         world.spawn(AudioBundle {
@@ -349,7 +355,7 @@ fn stack_item(world: &mut World, id: Entity, stack: Entity) -> ItemType {
     e.insert(InStack(stack));
     *e.get_mut::<Handle<Image>>().unwrap() = new_handle;
     e.get_mut::<Sprite>().unwrap().anchor = Anchor::BottomCenter;
-    e.get_mut::<Transform>().unwrap().translation.z = 100.0;
+    e.get_mut::<Transform>().unwrap().translation.z = layers::ITEMS;
 
     t
 }
@@ -364,8 +370,8 @@ pub fn stack_items(
             let Ok((mut t, x_offset, item_type)) = items.get_mut(*entity) else {
                 continue;
             };
-            t.translation =
-                transform.translation + Vec2::new(x_offset.0, current_height).extend(1.);
+            t.translation = (transform.translation.xy() + Vec2::new(x_offset.0, current_height))
+                .extend(layers::ITEMS);
             current_height += item_type.stack_dimensions().y;
         }
         stack.current_height = current_height;

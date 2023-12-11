@@ -1,15 +1,22 @@
 use bevy::{ecs::system::Command, prelude::*, sprite::Anchor};
+use bevy_mod_picking::picking_core::Pickable;
 
-use crate::game_state::GameState;
+use crate::{game_state::GameState, layers};
+
+#[derive(Component)]
+pub struct StressMeterRect;
+
+#[derive(Component)]
+pub struct StressOverlay {
+    min_visible: f32,
+    max_visible: f32,
+}
 
 #[derive(Component, Default)]
 pub struct StressMeter {
     /// 0-100
     pub value: f32,
 }
-
-#[derive(Component)]
-pub struct StressMeterRect;
 
 impl StressMeter {
     const DIM: Vec2 = Vec2::new(16., 130.);
@@ -19,7 +26,7 @@ impl StressMeter {
                 StressMeter { value: 10. },
                 SpriteBundle {
                     texture: asset_server.load("meter_stress.png"),
-                    transform: Transform::from_xyz(-299., 41., 2.),
+                    transform: Transform::from_xyz(-299., 41., layers::UI + 2.),
                     ..default()
                 },
             ))
@@ -44,6 +51,40 @@ impl StressMeter {
                     },
                 ));
             });
+
+        commands.spawn((
+            StressOverlay {
+                min_visible: 50.,
+                max_visible: 100.,
+            },
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgba_u8(255, 255, 255, 0),
+                    ..default()
+                },
+                texture: asset_server.load("Stress_Indicator_1.png"),
+                transform: Transform::from_xyz(0., 0., layers::STRESS_INDICATOR),
+                ..default()
+            },
+            Pickable::IGNORE,
+        ));
+
+        commands.spawn((
+            StressOverlay {
+                min_visible: 85.,
+                max_visible: 100.,
+            },
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgba_u8(255, 255, 255, 0),
+                    ..default()
+                },
+                texture: asset_server.load("Stress_Indicator_2.png"),
+                transform: Transform::from_xyz(0., 0., layers::STRESS_INDICATOR),
+                ..default()
+            },
+            Pickable::IGNORE,
+        ));
     }
 
     pub fn animate_meter(
@@ -55,6 +96,20 @@ impl StressMeter {
             return;
         };
         size.y = height.max(1.);
+    }
+
+    pub fn animate_stress_overlays(
+        stress: Query<&StressMeter>,
+        mut overlays: Query<(&mut Sprite, &StressOverlay)>,
+    ) {
+        let stress = stress.single();
+        for (mut sprite, overlay) in &mut overlays {
+            sprite.color.set_a(if stress.value > overlay.min_visible {
+                0.5 * (stress.value - overlay.min_visible) / (overlay.max_visible - overlay.min_visible)
+            } else {
+                0.
+            });
+        }
     }
 }
 

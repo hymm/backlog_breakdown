@@ -1,6 +1,8 @@
 use bevy::{prelude::*, utils::HashMap};
 use bevy_vector_shapes::prelude::*;
 
+use crate::layers;
+
 #[derive(Resource, Default)]
 pub struct ConsumeCount {
     pub total: u32,
@@ -47,7 +49,7 @@ impl CounterMarker {
                 CounterMarker,
                 ShapeBundle {
                     spatial_bundle: SpatialBundle {
-                        transform: Transform::from_xyz(-272., 160., 1.),
+                        transform: Transform::from_xyz(-272., 160., layers::UI),
                         ..default()
                     },
                     ..ShapeBundle::rect(

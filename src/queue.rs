@@ -11,7 +11,7 @@ use crate::{
     consume_counter::ConsumeCount,
     item::{ItemHandleIndex, ItemType},
     stress::{EmitStress, StressPopupText},
-    Sfx,
+    Sfx, layers,
 };
 
 #[derive(Component)]
@@ -34,7 +34,7 @@ impl Queue {
                         custom_size: Some(Vec2::new(640., 100.)),
                         ..default()
                     },
-                    transform: Transform::from_xyz(0., -130., 0.1),
+                    transform: Transform::from_xyz(0., -130., layers::BACKGROUND + 0.1),
                     ..default()
                 },
                 PickableBundle::default(),
@@ -73,7 +73,7 @@ impl EntityCommand for AddToQueue {
         queue.items.push_back(id);
         let mut e = world.entity_mut(id);
         e.insert((InQueue, Pickable::IGNORE));
-        e.get_mut::<Transform>().unwrap().translation.z = 100.0;
+        e.get_mut::<Transform>().unwrap().translation.z = layers::ITEMS;
     }
 }
 
@@ -81,7 +81,7 @@ pub fn in_queue_transforms(
     mut items: Query<&mut Transform, With<InQueue>>,
     queue: Query<(&Queue, &GlobalTransform)>,
 ) {
-    const FIRST_ITEM_OFFSET: Vec3 = Vec3::new(20.0, 0.0, 1.0);
+    const FIRST_ITEM_OFFSET: Vec3 = Vec3::new(20.0, 0.0, 10.0);
     let Ok((queue, queue_transform)) = queue.get_single() else {
         return;
     };
@@ -91,8 +91,7 @@ pub fn in_queue_transforms(
             continue;
         };
         transform.translation = queue_transform.translation() + FIRST_ITEM_OFFSET
-            - Vec3::X * (index * 75) as f32
-            + Vec3::Z;
+            - Vec3::X * (index * 75) as f32;
     }
 }
 
@@ -114,7 +113,7 @@ impl ConsumeActive {
                         custom_size: Some(Vec2::new(50., 50.)),
                         ..default()
                     },
-                    transform: Transform::from_xyz(98., -130., 0.),
+                    transform: Transform::from_xyz(98., -130., layers::BACKGROUND),
                     ..default()
                 },
             ))
@@ -249,5 +248,5 @@ pub fn draw_timer(
     let Some(ref mut size) = sprite.custom_size else {
         return;
     };
-    size.y = (52. * (1. - fraction_left)).max(1.);
+    size.y = (52. * fraction_left).max(1.);
 }

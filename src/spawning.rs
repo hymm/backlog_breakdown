@@ -10,7 +10,7 @@ use bevy_vector_shapes::prelude::*;
 use crate::{
     stack::{SpawnEvent, StackPenalty},
     stress::{EmitStress, StressPopupText},
-    Sfx,
+    Sfx, layers,
 };
 
 pub struct SpawningPlugin;
@@ -42,7 +42,7 @@ pub fn spawn_button(mut commands: Commands, asset_server: Res<AssetServer>) {
                     color: Color::WHITE.with_a(0.),
                     ..default()
                 },
-                transform: Transform::from_xyz(290., 149., 10.),
+                transform: Transform::from_xyz(290., 149., layers::UI + 10.),
                 ..default()
             },
             PickableBundle::default(),
@@ -117,7 +117,7 @@ pub fn draw_button(
     };
     let fraction_left = today.timer.elapsed_secs() / today.timer.duration().as_secs_f32();
 
-    painter.translate(transform.translation().xy().extend(9.));
+    painter.translate(transform.translation().xy().extend(layers::UI + 9.));
     // painter.thickness = 0.5;
     painter.hollow = false;
     painter.color = if today.clicked_today {

@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::{prelude::*, sprite::Anchor};
 use bevy_mod_picking::prelude::*;
 
-use crate::stack::{InStack, RemoveFromStack, StackOffset};
+use crate::{stack::{InStack, RemoveFromStack, StackOffset}, layers};
 
 #[derive(Bundle)]
 pub struct ItemBundle {
@@ -34,7 +34,7 @@ impl ItemBundle {
                     ..default()
                 },
                 texture,
-                transform: Transform::from_xyz(0., 0., 100.),
+                transform: Transform::from_xyz(0., 0., layers::ITEMS),
                 ..default()
             },
             item_type,
@@ -57,7 +57,7 @@ impl ItemBundle {
             on_drag: On::<Pointer<Drag>>::target_component_mut::<Transform>(|drag, transform| {
                 transform.translation.x += drag.delta.x; // Make the square follow the mouse
                 transform.translation.y -= drag.delta.y;
-                transform.translation.z = 101.0;
+                transform.translation.z = layers::ITEMS + 1.;
             }),
         }
     }
