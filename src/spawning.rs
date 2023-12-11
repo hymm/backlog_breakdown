@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, time::Duration};
 
 use bevy::{
     audio::{Volume, VolumeLevel},
@@ -11,14 +11,14 @@ use crate::{
     layers,
     stack::{SpawnEvent, StackPenalty},
     stress::{EmitStress, StressPopupText},
-    Sfx,
+    Sfx, consume_counter::ConsumeCount,
 };
 
 pub struct SpawningPlugin;
 impl Plugin for SpawningPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TodayTimer {
-            timer: Timer::from_seconds(5., TimerMode::Repeating),
+            timer: Timer::from_seconds(10., TimerMode::Repeating),
             clicked_today: false,
         });
     }
@@ -118,6 +118,7 @@ pub fn check_timer(
     stack_penalty: Res<StackPenalty>,
     sfx: Res<Sfx>,
     button: Query<&GlobalTransform, With<CircleButton>>,
+    consumed_counter: Res<ConsumeCount>,
 ) {
     if today.timer.tick(time.delta()).finished() {
         let click_penalty = if today.clicked_today {
@@ -139,6 +140,10 @@ pub fn check_timer(
             spawn_origin: button.single().translation() - 35. * Vec3::X + 100. * Vec3::Z,
             stress_value,
         });
+
+        // adjust timer time.
+        let timer_secs = 10. - (consumed_counter.total / 10).min(5) as f32;
+        today.timer.set_duration(Duration::from_secs_f32(timer_secs));
     }
 }
 
