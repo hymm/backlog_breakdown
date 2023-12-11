@@ -101,7 +101,7 @@ impl ItemType {
         match self {
             ItemType::Book => Duration::from_secs_f32(5.),
             ItemType::Movie => Duration::from_secs_f32(2.),
-            ItemType::Game => Duration::from_secs_f32(10.),
+            ItemType::Game => Duration::from_secs_f32(8.),
             ItemType::Comic => Duration::from_secs_f32(1.),
         }
     }
