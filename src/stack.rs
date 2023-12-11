@@ -331,7 +331,7 @@ impl Command for SpawnEvent {
         });
         StressPopupText::apply(
             StressPopupText {
-                spawn_origin: Vec3::new(255., 149., 10.),
+                spawn_origin: Vec3::new(255., 149., 200.),
                 stress_value: -1.,
             },
             world,

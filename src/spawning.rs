@@ -101,7 +101,7 @@ pub fn check_timer(
         let stress_value = click_penalty + stack_penalty.0;
         commands.add(EmitStress(stress_value));
         commands.add(StressPopupText {
-            spawn_origin: button.single().translation() - 35. * Vec3::X,
+            spawn_origin: button.single().translation() - 35. * Vec3::X + 100. * Vec3::Z,
             stress_value,
         });
     }

@@ -211,7 +211,7 @@ pub fn consume_active(
     if timer.0.tick(time.delta()).just_finished() {
         commands.add(EmitStress(-1.));
         commands.add(StressPopupText {
-            spawn_origin: t.translation() + 33. * Vec3::Y,
+            spawn_origin: t.translation() + 33. * Vec3::Y + 100. * Vec3::Z,
             stress_value: -1.,
         });
         commands.entity(e).despawn();

@@ -86,10 +86,14 @@ pub struct StressText {
     timer: Timer,
 }
 
+#[derive(Component)]
+pub struct StartPosition(pub Vec3);
+
 pub struct StressPopupText {
     pub spawn_origin: Vec3,
     pub stress_value: f32,
 }
+
 impl Command for StressPopupText {
     fn apply(self, world: &mut World) {
         let font = world
@@ -97,7 +101,7 @@ impl Command for StressPopupText {
             .load("chevyray_bird_seed.ttf");
         world.spawn((
             StressText {
-                timer: Timer::from_seconds(0.5, TimerMode::Once),
+                timer: Timer::from_seconds(2., TimerMode::Once),
             },
             Text2dBundle {
                 text: Text::from_section(
@@ -111,11 +115,11 @@ impl Command for StressPopupText {
                             Color::CRIMSON
                         },
                     },
-                )
-                .with_alignment(TextAlignment::Right),
+                ),
                 transform: Transform::from_translation(self.spawn_origin),
                 ..default()
             },
+            StartPosition(self.spawn_origin),
         ));
     }
 }
@@ -123,11 +127,14 @@ impl Command for StressPopupText {
 impl StressText {
     pub fn animate_text(
         mut commands: Commands,
-        mut texts: Query<(Entity, &mut StressText)>,
+        mut texts: Query<(Entity, &mut StressText, &mut Transform, &mut Text)>,
         time: Res<Time>,
     ) {
-        for (e, mut text) in &mut texts {
-            if text.timer.tick(time.delta()).finished() {
+        for (e, mut stress_timer, mut t, mut text) in &mut texts {
+            t.translation.y += time.delta().as_secs_f32() * 10.;
+            let new_a = text.sections[0].style.color.a() - 0.005 * text.sections[0].style.color.a();
+            text.sections[0].style.color.set_a(new_a.max(0.0));
+            if stress_timer.timer.tick(time.delta()).finished() {
                 commands.entity(e).despawn();
             }
         }
