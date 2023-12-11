@@ -17,12 +17,14 @@ pub struct DialogText;
 pub struct ShownDialog(pub Option<&'static str>);
 
 impl ShownDialog {
-    const DIALOGS: [&'static str; 5] = [
+        const DIALOGS: [&'static str; 7] = [
         "Humble Bundle again...",
         "Got a gift card!",
         "Couldn't resist",
         "It wasn't on sale, but...",
         "I wanted to revist these.",
+        "Got paid!",
+        "Recommended by my friend",
     ];
 
     pub fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {

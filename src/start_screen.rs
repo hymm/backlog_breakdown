@@ -15,6 +15,27 @@ impl Plugin for StartScreenPlugin {
 pub struct MenuMarker;
 
 fn spawn_startup_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn(SpriteBundle {
+        texture: asset_server.load("BacklogBreakdown_Start.png"),
+        ..default()
+    }).with_children(|children| {
+        children.spawn((
+            MenuMarker,
+            Text2dBundle {
+                text: Text::from_section(
+                    "Click to Start",
+                    TextStyle {
+                        font: asset_server.load("chevyray_bird_seed.ttf"),
+                        font_size: 16.,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                    },
+                ),
+                transform: Transform::from_xyz(0., -144., 1.),
+                ..default()
+            },
+        ));
+    });
+
     commands
         .spawn((
             MenuMarker,
@@ -37,29 +58,14 @@ fn spawn_startup_screen(mut commands: Commands, asset_server: Res<AssetServer>) 
                         style: Style {
                             width: Val::Percent(100.0),
                             height: Val::Percent(100.0),
-                            // horizontally center child text
                             justify_content: JustifyContent::Center,
-                            // vertically center child text
                             align_items: AlignItems::Center,
                             ..default()
                         },
-                        background_color: Color::DARK_GRAY.into(),
+                        background_color: Color::DARK_GRAY.with_a(0.).into(),
                         ..default()
                     },
-                ))
-                .with_children(|parent| {
-                    parent.spawn((
-                        MenuMarker,
-                        TextBundle::from_section(
-                            "Click or Press Space to Start",
-                            TextStyle {
-                                font: asset_server.load("chevyray_bird_seed.ttf"),
-                                font_size: 40.0,
-                                color: Color::rgb(0.9, 0.9, 0.9),
-                            },
-                        ),
-                    ));
-                });
+                ));
         });
 }
 
@@ -71,23 +77,19 @@ fn despawn_menu(mut commands: Commands, q: Query<Entity, With<MenuMarker>>) {
 
 fn button_system(
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor),
+        &Interaction,
         (Changed<Interaction>, With<Button>),
     >,
     mut state: ResMut<NextState<GameState>>,
 ) {
-    for (interaction, mut color) in &mut interaction_query {
+    for interaction in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
                 state.set(GameState::Playing);
-                *color = Color::GRAY.into();
+                // *color = Color::GRAY.with_a(0.).into();
             }
-            Interaction::Hovered => {
-                *color = Color::GRAY.into();
-            }
-            Interaction::None => {
-                *color = Color::DARK_GRAY.into();
-            }
+            Interaction::Hovered => {},
+            Interaction::None => {},
         }
     }
 }

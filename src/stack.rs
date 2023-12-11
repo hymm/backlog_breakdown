@@ -131,28 +131,28 @@ impl Stack {
         );
 
         // seed the stacks
-        for _ in 0..random_usize(rng, 1, 8) {
+        for _ in 0..random_usize(rng, 3, 8) {
             commands.add(SpawnOn {
                 item_type: ItemType::Book,
                 stack_entity: book_id,
             });
         }
 
-        for _ in 0..random_usize(rng, 1, 8) {
+        for _ in 0..random_usize(rng, 3, 8) {
             commands.add(SpawnOn {
                 item_type: ItemType::Comic,
                 stack_entity: comic_id,
             });
         }
 
-        for _ in 0..random_usize(rng, 1, 8) {
+        for _ in 0..random_usize(rng, 3, 8) {
             commands.add(SpawnOn {
                 item_type: ItemType::Game,
                 stack_entity: game_id,
             });
         }
 
-        for _ in 0..random_usize(rng, 1, 8) {
+        for _ in 0..random_usize(rng, 3, 8) {
             commands.add(SpawnOn {
                 item_type: ItemType::Movie,
                 stack_entity: movie_id,
