@@ -1,4 +1,4 @@
-use bevy::{ecs::system::Command, prelude::*};
+use bevy::{ecs::system::Command, prelude::*, sprite::Anchor};
 use bevy_vector_shapes::prelude::*;
 
 use crate::game_state::GameState;
@@ -9,53 +9,51 @@ pub struct StressMeter {
     pub value: f32,
 }
 
+#[derive(Component)]
+pub struct StressMeterRect;
+
 impl StressMeter {
     const DIM: Vec2 = Vec2::new(16., 130.);
     pub fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         commands
             .spawn((
                 StressMeter { value: 10. },
-                ShapeBundle {
-                    spatial_bundle: SpatialBundle {
-                        transform: Transform::from_xyz(-300., 40., 2.),
-                        ..default()
-                    },
-                    ..ShapeBundle::rect(
-                        &ShapeConfig {
-                            thickness: 1.5,
-                            hollow: true,
-                            corner_radii: Vec4::splat(3.),
-                            ..ShapeConfig::default_2d()
-                        },
-                        StressMeter::DIM,
-                    )
+                SpriteBundle {
+                    texture: asset_server.load("meter_stress.png"),
+                    transform: Transform::from_xyz(-299., 41., 2.),
+                    ..default()
                 },
             ))
             .with_children(|children| {
                 children.spawn(SpriteBundle {
-                    transform: Transform::from_xyz(0., Self::DIM.y / 2. + 16., 0.1),
-                    texture: asset_server.load("debuff_icon.png"),
+                    transform: Transform::from_xyz(2., Self::DIM.y / 2. + 18., 0.1),
+                    texture: asset_server.load("stress_icon.png"),
                     ..default()
                 });
+
+                children.spawn((
+                    StressMeterRect,
+                    SpriteBundle {
+                        sprite: Sprite {
+                            custom_size: Some(Vec2::new(14., 1.)),
+                            color: Color::rgb_u8(108, 58, 70),
+                            anchor: Anchor::BottomCenter,
+                            ..default()
+                        },
+                        transform: Transform::from_xyz(0., -57., -0.1),
+                        ..default()
+                    },
+                ));
             });
     }
 
-    pub fn animate_meter(
-        mut painter: ShapePainter,
-        stress: Query<(&StressMeter, &GlobalTransform)>,
+    pub fn animate_meter( 
+        stress: Query<&StressMeter>,
+        mut stress_rect: Query<&mut Sprite, With<StressMeterRect>>,
     ) {
-        let Ok((meter, transform)) = stress.get_single() else {
-            return;
-        };
-        let height = StressMeter::DIM.y * meter.value / 100.;
-        let mut translation = transform.translation();
-        let bottom = transform.translation().y - StressMeter::DIM.y / 2.;
-        translation.y = bottom + height / 2.;
-        translation.z -= 1.;
-        painter.color = Color::WHITE;
-        painter.corner_radii = Vec4::splat(3.);
-        painter.translate(translation);
-        painter.rect(Vec2::new(StressMeter::DIM.x, height));
+        let height = 114. * stress.single().value / 100.;
+        let Some(ref mut size) = stress_rect.single_mut().custom_size else { return; };
+        size.y = height;
     }
 }
 

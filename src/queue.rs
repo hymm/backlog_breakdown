@@ -130,7 +130,7 @@ impl ConsumeActive {
                         children.spawn((ConsumeMeter, SpriteBundle {
                             sprite: Sprite {
                                 custom_size: Some(Vec2::new(10., 1.)),
-                                color: Color::GREEN,
+                                color: Color::rgb_u8(137, 166, 93),
                                 anchor: Anchor::BottomCenter,
                                 ..default()
                             },
