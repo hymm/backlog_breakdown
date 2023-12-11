@@ -9,7 +9,7 @@ use bevy_vector_shapes::prelude::*;
 use rand_core::RngCore;
 
 use crate::{
-    dialog::{ShownDialog, DialogBox},
+    dialog::{DialogBox, ShownDialog},
     item::{ItemBundle, ItemDragging, ItemHandleIndex, ItemHandles, ItemType},
     queue::{ActiveItem, InQueue},
     spawning::TodayTimer,
@@ -68,33 +68,32 @@ impl Stack {
                 }),
             ))
             .with_children(|children| {
-                children.spawn(ShapeBundle {
-                    spatial_bundle: SpatialBundle {
-                        transform: Transform::from_xyz(0., -12., 0.5),
-                        ..default()
-                    },
-                    ..ShapeBundle::rect(
-                        &ShapeConfig {
-                            color: Color::rgb_u8(217, 155, 150),
-                            corner_radii: Vec4::splat(8.),
-                            ..ShapeConfig::default_2d()
+                children
+                    .spawn(
+                        SpriteBundle {
+                            sprite: Sprite {
+                                color: Color::rgb_u8(217, 155, 150),
+                                ..default()
+                            },
+                            texture: asset_server.load("category_box.png"),
+                            transform: Transform::from_xyz(0., -12., 0.5),
+                            ..default()
                         },
-                        Vec2::new(60., 14.),
                     )
-                });
-
-                children.spawn(Text2dBundle {
-                    text: Text::from_section(
-                        item_type.label(),
-                        TextStyle {
-                            font: asset_server.load("chevyray_bird_seed.ttf"),
-                            font_size: 12.,
-                            color: Color::BLACK,
-                        },
-                    ),
-                    transform: Transform::from_xyz(0., -14., 1.0),
-                    ..default()
-                });
+                    .with_children(|children| {
+                        children.spawn(Text2dBundle {
+                            text: Text::from_section(
+                                item_type.label(),
+                                TextStyle {
+                                    font: asset_server.load("chevyray_bird_seed.ttf"),
+                                    font_size: 10.,
+                                    color: Color::BLACK,
+                                },
+                            ),
+                            transform: Transform::from_xyz(0., -1., 1.0),
+                            ..default()
+                        });
+                    });
             })
             .id()
     }
@@ -221,7 +220,8 @@ impl Command for SpawnOn {
 
         let offset = ((rng.next_u32() as f32 / u32::MAX as f32) - 0.5) * 7.;
         let item_total = self.item_type.get_handles_max(&handles);
-        let item_index = ((rng.next_u32() as f64 / u32::MAX as f64) * item_total as f64 - 0.5).round() as usize;
+        let item_index =
+            ((rng.next_u32() as f64 / u32::MAX as f64) * item_total as f64 - 0.5).round() as usize;
         let new_item = commands
             .spawn(ItemBundle::new(
                 self.item_type,
@@ -429,7 +429,7 @@ pub struct StackPenalty(pub f32);
 pub fn check_stack(
     stacks: Query<(&Stack, &Children)>,
     items_query: Query<&ItemType, With<InStack>>,
-    mut rects: Query<&mut Rectangle>,
+    mut sprites: Query<&mut Sprite>,
     mut stack_penalty: ResMut<StackPenalty>,
 ) {
     let mut penalty = 0.;
@@ -450,11 +450,11 @@ pub fn check_stack(
         }
 
         if let Some(rect_entity) = rect_entity {
-            let Ok(ref mut rect) = rects.get_mut(*rect_entity) else {
+            let Ok(ref mut sprite) = sprites.get_mut(*rect_entity) else {
                 continue;
             };
 
-            rect.color = if text_stack_has_penalty {
+            sprite.color = if text_stack_has_penalty {
                 Color::CRIMSON
             } else {
                 Color::rgb_u8(217, 155, 150)
@@ -463,5 +463,3 @@ pub fn check_stack(
     }
     stack_penalty.0 = penalty;
 }
-
-pub fn blink(color_1: Color, color_2: Color, time: f32) {}
