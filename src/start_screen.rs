@@ -16,10 +16,13 @@ pub struct MenuMarker;
 
 fn spawn_startup_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
-        .spawn(SpriteBundle {
-            texture: asset_server.load("BacklogBreakdown_Start.png"),
-            ..default()
-        })
+        .spawn((
+            MenuMarker,
+            SpriteBundle {
+                texture: asset_server.load("BacklogBreakdown_Start.png"),
+                ..default()
+            },
+        ))
         .with_children(|children| {
             children.spawn((
                 MenuMarker,

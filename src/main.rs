@@ -86,6 +86,7 @@ fn main() {
                 CounterMarker::update_counter,
                 ShownDialog::handle_visibility,
                 StressText::animate_text,
+                skip_to_end,
                 (check_timer, draw_button).chain(),
             )
                 .run_if(in_state(GameState::Playing)),
@@ -124,6 +125,7 @@ fn setup(
     asset_server: Res<AssetServer>,
     mut rng: ResMut<GlobalEntropy<ChaCha8Rng>>,
 ) {
+    commands.insert_resource(ConsumeCount::default());
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("background.png"),
@@ -170,6 +172,25 @@ impl BackgroundMusic {
     fn despawn(mut commands: Commands, q: Query<Entity, With<BackgroundMusic>>) {
         for e in &q {
             commands.entity(e).despawn();
+        }
+    }
+}
+
+fn skip_to_end(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut state: ResMut<NextState<GameState>>,
+    button_inputs: Res<Input<GamepadButton>>,
+    gamepads: Res<Gamepads>,
+) {
+    if keyboard_input.pressed(KeyCode::Escape) || keyboard_input.pressed(KeyCode::Return) {
+        state.set(GameState::Failed);
+    }
+
+    for gamepad in gamepads.iter() {
+        if button_inputs.pressed(GamepadButton::new(gamepad, GamepadButtonType::Start))
+            || button_inputs.pressed(GamepadButton::new(gamepad, GamepadButtonType::South))
+        {
+            state.set(GameState::Failed);
         }
     }
 }

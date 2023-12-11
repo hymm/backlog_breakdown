@@ -19,15 +19,21 @@ fn spawn(
     counts: Res<ConsumeCount>,
     handles: Res<ItemHandles>,
 ) {
+    commands.spawn((FailMarker, SpriteBundle {
+        texture: asset_server.load("BacklogBreakdown_GameOver.png"),
+        ..default()
+    }));
+
     commands
         .spawn((
             FailMarker,
             NodeBundle {
                 style: Style {
-                    width: Val::Percent(100.),
+                    width: Val::Px(200.),
                     height: Val::Percent(100.),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
+                    margin: UiRect::px(390., 0., 40., 0.),
+                    align_items: AlignItems::Start,
+                    justify_content: JustifyContent::Start,
                     flex_direction: FlexDirection::Column,
                     ..default()
                 },
@@ -38,10 +44,10 @@ fn spawn(
             children.spawn((
                 FailMarker,
                 TextBundle::from_section(
-                    "You Collapsed from Stress!",
+                    "You've drowned in your backlog!",
                     TextStyle {
                         font: asset_server.load("chevyray_bird_seed.ttf"),
-                        font_size: 20.0,
+                        font_size: 16.0,
                         color: Color::rgb(0.9, 0.9, 0.9),
                     },
                 ),
@@ -51,7 +57,7 @@ fn spawn(
                 FailMarker,
                 TextBundle::from_section(
                     format!(
-                        "Total: {}\nBooks: {}\nMovies: {}\nGames: {}\nComics: {}",
+                        "\nTotal: {}\nBooks: {}\nMovies: {}\nGames: {}\nComics: {}",
                         counts.total,
                         counts.books.total,
                         counts.movies.total,
@@ -60,7 +66,7 @@ fn spawn(
                     ),
                     TextStyle {
                         font: asset_server.load("chevyray_bird_seed.ttf"),
-                        font_size: 20.0,
+                        font_size: 16.0,
                         color: Color::rgb(0.9, 0.9, 0.9),
                     },
                 ),
@@ -71,8 +77,11 @@ fn spawn(
                     FailMarker,
                     NodeBundle {
                         style: Style {
+                            margin: UiRect::top(Val::Px(65.)),
+                            height: Val::Px(90.),
                             row_gap: Val::Px(12.),
-                            column_gap: Val::Px(12.),
+                            column_gap: Val::Px(14.),
+                            align_items: AlignItems::Center,
                             ..default()
                         },
                         ..default()
