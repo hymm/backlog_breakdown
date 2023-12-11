@@ -108,6 +108,7 @@ pub struct Sfx {
     no_click: Handle<AudioSource>,
     buy: Handle<AudioSource>,
     consume: Handle<AudioSource>,
+    queue: Handle<AudioSource>,
 }
 
 fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -117,6 +118,7 @@ fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
         no_click: asset_server.load("sfx/no-click.ogg"),
         buy: asset_server.load("sfx/buy.ogg"),
         consume: asset_server.load("sfx/consume.ogg"),
+        queue: asset_server.load("sfx/queue.ogg"),
     });
 }
 

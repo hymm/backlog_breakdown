@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use bevy::{
     ecs::system::{Command, EntityCommand},
     prelude::*,
-    sprite::Anchor,
+    sprite::Anchor, audio::{Volume, VolumeLevel},
 };
 use bevy_mod_picking::prelude::*;
 
@@ -75,6 +75,15 @@ impl EntityCommand for AddToQueue {
         let mut e = world.entity_mut(id);
         e.insert((InQueue, Pickable::IGNORE));
         e.get_mut::<Transform>().unwrap().translation.z = layers::ITEMS;
+
+        let source = world.resource::<Sfx>().queue.clone();
+        world.spawn(AudioBundle {
+            source,
+            settings: PlaybackSettings {
+                volume: Volume::Relative(VolumeLevel::new(0.9)),
+                ..default()
+            },
+        });
     }
 }
 
