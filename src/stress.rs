@@ -1,5 +1,4 @@
 use bevy::{ecs::system::Command, prelude::*, sprite::Anchor};
-use bevy_vector_shapes::prelude::*;
 
 use crate::game_state::GameState;
 
@@ -47,13 +46,15 @@ impl StressMeter {
             });
     }
 
-    pub fn animate_meter( 
+    pub fn animate_meter(
         stress: Query<&StressMeter>,
         mut stress_rect: Query<&mut Sprite, With<StressMeterRect>>,
     ) {
         let height = 114. * stress.single().value / 100.;
-        let Some(ref mut size) = stress_rect.single_mut().custom_size else { return; };
-        size.y = height;
+        let Some(ref mut size) = stress_rect.single_mut().custom_size else {
+            return;
+        };
+        size.y = height.max(1.);
     }
 }
 

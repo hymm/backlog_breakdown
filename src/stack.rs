@@ -5,7 +5,6 @@ use bevy::{
 };
 use bevy_mod_picking::prelude::*;
 use bevy_rand::prelude::*;
-use bevy_vector_shapes::prelude::*;
 use rand_core::RngCore;
 
 use crate::{

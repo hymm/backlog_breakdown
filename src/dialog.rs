@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_mod_picking::prelude::*;
 use bevy_rand::{prelude::ChaCha8Rng, resource::GlobalEntropy};
-use bevy_vector_shapes::prelude::*;
 use rand_core::RngCore;
 
 #[derive(Component)]
@@ -33,11 +32,7 @@ impl ShownDialog {
                     timer: Timer::from_seconds(3.5, TimerMode::Once),
                 },
                 SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(290., 22.)),
-                        color: Color::DARK_GRAY,
-                        ..default()
-                    },
+                    texture: asset_server.load("dialogbox.png"),
                     transform: Transform::from_xyz(0., 0., 50.),
                     ..default()
                 },

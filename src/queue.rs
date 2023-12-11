@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, f32::consts::PI};
+use std::collections::VecDeque;
 
 use bevy::{
     ecs::system::{Command, EntityCommand},
@@ -6,7 +6,6 @@ use bevy::{
     sprite::Anchor,
 };
 use bevy_mod_picking::prelude::*;
-use bevy_vector_shapes::prelude::*;
 
 use crate::{
     consume_counter::ConsumeCount,
@@ -127,16 +126,19 @@ impl ConsumeActive {
                         ..default()
                     })
                     .with_children(|children| {
-                        children.spawn((ConsumeMeter, SpriteBundle {
-                            sprite: Sprite {
-                                custom_size: Some(Vec2::new(10., 1.)),
-                                color: Color::rgb_u8(137, 166, 93),
-                                anchor: Anchor::BottomCenter,
+                        children.spawn((
+                            ConsumeMeter,
+                            SpriteBundle {
+                                sprite: Sprite {
+                                    custom_size: Some(Vec2::new(10., 1.)),
+                                    color: Color::rgb_u8(137, 166, 93),
+                                    anchor: Anchor::BottomCenter,
+                                    ..default()
+                                },
+                                transform: Transform::from_xyz(0., -26., -0.1),
                                 ..default()
                             },
-                            transform: Transform::from_xyz(0., -25., -0.1),
-                            ..default()
-                        }));
+                        ));
                     });
 
                 children.spawn(Text2dBundle {
@@ -240,10 +242,12 @@ pub fn draw_timer(
     let Ok(timer) = active_query.get_single() else {
         return;
     };
-    
+
     let fraction_left = timer.0.elapsed_secs() / timer.0.duration().as_secs_f32();
 
     let mut sprite = consume_meter.single_mut();
-    let Some(ref mut size) = sprite.custom_size else { return; };
-    size.y = 51. * (1. - fraction_left);
+    let Some(ref mut size) = sprite.custom_size else {
+        return;
+    };
+    size.y = (52. * (1. - fraction_left)).max(1.);
 }
