@@ -15,26 +15,28 @@ impl Plugin for StartScreenPlugin {
 pub struct MenuMarker;
 
 fn spawn_startup_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(SpriteBundle {
-        texture: asset_server.load("BacklogBreakdown_Start.png"),
-        ..default()
-    }).with_children(|children| {
-        children.spawn((
-            MenuMarker,
-            Text2dBundle {
-                text: Text::from_section(
-                    "Click to Start",
-                    TextStyle {
-                        font: asset_server.load("chevyray_bird_seed.ttf"),
-                        font_size: 16.,
-                        color: Color::rgb(0.9, 0.9, 0.9),
-                    },
-                ),
-                transform: Transform::from_xyz(0., -144., 1.),
-                ..default()
-            },
-        ));
-    });
+    commands
+        .spawn(SpriteBundle {
+            texture: asset_server.load("BacklogBreakdown_Start.png"),
+            ..default()
+        })
+        .with_children(|children| {
+            children.spawn((
+                MenuMarker,
+                Text2dBundle {
+                    text: Text::from_section(
+                        "Click to Start",
+                        TextStyle {
+                            font: asset_server.load("chevyray_bird_seed.ttf"),
+                            font_size: 16.,
+                            color: Color::rgb(0.9, 0.9, 0.9),
+                        },
+                    ),
+                    transform: Transform::from_xyz(0., -144., 1.),
+                    ..default()
+                },
+            ));
+        });
 
     commands
         .spawn((
@@ -51,21 +53,20 @@ fn spawn_startup_screen(mut commands: Commands, asset_server: Res<AssetServer>) 
             },
         ))
         .with_children(|parent| {
-            parent
-                .spawn((
-                    MenuMarker,
-                    ButtonBundle {
-                        style: Style {
-                            width: Val::Percent(100.0),
-                            height: Val::Percent(100.0),
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            ..default()
-                        },
-                        background_color: Color::DARK_GRAY.with_a(0.).into(),
+            parent.spawn((
+                MenuMarker,
+                ButtonBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
                         ..default()
                     },
-                ));
+                    background_color: Color::DARK_GRAY.with_a(0.).into(),
+                    ..default()
+                },
+            ));
         });
 }
 
@@ -76,10 +77,7 @@ fn despawn_menu(mut commands: Commands, q: Query<Entity, With<MenuMarker>>) {
 }
 
 fn button_system(
-    mut interaction_query: Query<
-        &Interaction,
-        (Changed<Interaction>, With<Button>),
-    >,
+    mut interaction_query: Query<&Interaction, (Changed<Interaction>, With<Button>)>,
     mut state: ResMut<NextState<GameState>>,
 ) {
     for interaction in &mut interaction_query {
@@ -88,8 +86,8 @@ fn button_system(
                 state.set(GameState::Playing);
                 // *color = Color::GRAY.with_a(0.).into();
             }
-            Interaction::Hovered => {},
-            Interaction::None => {},
+            Interaction::Hovered => {}
+            Interaction::None => {}
         }
     }
 }

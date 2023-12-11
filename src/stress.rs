@@ -105,7 +105,8 @@ impl StressMeter {
         let stress = stress.single();
         for (mut sprite, overlay) in &mut overlays {
             sprite.color.set_a(if stress.value > overlay.min_visible {
-                0.4 * (stress.value - overlay.min_visible) / (overlay.max_visible - overlay.min_visible)
+                0.4 * (stress.value - overlay.min_visible)
+                    / (overlay.max_visible - overlay.min_visible)
             } else {
                 0.
             });

@@ -10,8 +10,9 @@ use bevy_mod_picking::prelude::*;
 use crate::{
     consume_counter::ConsumeCount,
     item::{ItemHandleIndex, ItemType},
+    layers,
     stress::{EmitStress, StressPopupText},
-    Sfx, layers,
+    Sfx,
 };
 
 #[derive(Component)]
@@ -90,8 +91,8 @@ pub fn in_queue_transforms(
         let Ok(mut transform) = items.get_mut(*entity) else {
             continue;
         };
-        transform.translation = queue_transform.translation() + FIRST_ITEM_OFFSET
-            - Vec3::X * (index * 75) as f32;
+        transform.translation =
+            queue_transform.translation() + FIRST_ITEM_OFFSET - Vec3::X * (index * 75) as f32;
     }
 }
 

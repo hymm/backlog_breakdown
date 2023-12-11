@@ -8,10 +8,11 @@ use bevy::{
 use bevy_mod_picking::prelude::*;
 
 use crate::{
+    consume_counter::ConsumeCount,
     layers,
     stack::{SpawnEvent, StackPenalty},
     stress::{EmitStress, StressPopupText},
-    Sfx, consume_counter::ConsumeCount,
+    Sfx,
 };
 
 pub struct SpawningPlugin;
@@ -143,11 +144,16 @@ pub fn check_timer(
 
         // adjust timer time.
         let timer_secs = 10. - (consumed_counter.total / 10).min(5) as f32;
-        today.timer.set_duration(Duration::from_secs_f32(timer_secs));
+        today
+            .timer
+            .set_duration(Duration::from_secs_f32(timer_secs));
     }
 }
 
-pub fn draw_button(today: Res<TodayTimer>, mut q: Query<(&mut Transform, &BuyClockHand, &mut Handle<ColorMaterial>)>) {
+pub fn draw_button(
+    today: Res<TodayTimer>,
+    mut q: Query<(&mut Transform, &BuyClockHand, &mut Handle<ColorMaterial>)>,
+) {
     let fraction_left = today.timer.elapsed_secs() / today.timer.duration().as_secs_f32();
 
     for (mut t, materials, mut handle) in &mut q {

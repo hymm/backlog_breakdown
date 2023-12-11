@@ -3,7 +3,10 @@ use std::time::Duration;
 use bevy::{prelude::*, sprite::Anchor};
 use bevy_mod_picking::prelude::*;
 
-use crate::{stack::{InStack, RemoveFromStack, StackOffset}, layers};
+use crate::{
+    layers,
+    stack::{InStack, RemoveFromStack, StackOffset},
+};
 
 #[derive(Bundle)]
 pub struct ItemBundle {

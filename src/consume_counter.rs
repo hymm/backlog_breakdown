@@ -19,17 +19,20 @@ pub struct ConsumeTypeCount {
 
 impl ConsumeTypeCount {
     pub fn favorite(&self) -> Option<usize> {
-        let favorite = self.items.iter().fold((None, 0), |(max_key, max_value), (key, value)| {
-            if max_key.is_some() {
-                if *value > max_value {
-                    (Some(*key), *value)
+        let favorite = self
+            .items
+            .iter()
+            .fold((None, 0), |(max_key, max_value), (key, value)| {
+                if max_key.is_some() {
+                    if *value > max_value {
+                        (Some(*key), *value)
+                    } else {
+                        (max_key, max_value)
+                    }
                 } else {
-                    (max_key, max_value)
+                    (Some(*key), *value)
                 }
-            } else {
-                (Some(*key), *value)
-            }
-        });
+            });
 
         favorite.0
     }
