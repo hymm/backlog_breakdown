@@ -1,7 +1,7 @@
 use std::{f32::consts::PI, time::Duration};
 
 use bevy::{
-    audio::{Volume, VolumeLevel},
+    audio::{Volume, VolumeLevel, PlaybackMode},
     prelude::*,
     sprite::MaterialMesh2dBundle,
 };
@@ -129,6 +129,7 @@ pub fn check_timer(
             commands.spawn(AudioBundle {
                 source: sfx.no_click.clone(),
                 settings: PlaybackSettings {
+                    mode: PlaybackMode::Despawn,
                     volume: Volume::Relative(VolumeLevel::new(0.5)),
                     ..default()
                 },

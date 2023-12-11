@@ -333,7 +333,7 @@ impl Command for SpawnEvent {
         let source = world.resource::<Sfx>().buy.clone();
         world.spawn(AudioBundle {
             source,
-            ..default()
+            settings: PlaybackSettings::DESPAWN,
         });
         StressPopupText::apply(
             StressPopupText {

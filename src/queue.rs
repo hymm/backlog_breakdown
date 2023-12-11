@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use bevy::{
     ecs::system::{Command, EntityCommand},
     prelude::*,
-    sprite::Anchor, audio::{Volume, VolumeLevel},
+    sprite::Anchor, audio::{Volume, VolumeLevel, PlaybackMode},
 };
 use bevy_mod_picking::prelude::*;
 
@@ -80,6 +80,7 @@ impl EntityCommand for AddToQueue {
         world.spawn(AudioBundle {
             source,
             settings: PlaybackSettings {
+                mode: PlaybackMode::Despawn,
                 volume: Volume::Relative(VolumeLevel::new(0.9)),
                 ..default()
             },
@@ -226,7 +227,7 @@ pub fn consume_active(
         commands.entity(e).despawn();
         commands.spawn(AudioBundle {
             source: sfx.consume.clone(),
-            ..default()
+            settings: PlaybackSettings::DESPAWN,
         });
         consumed.total += 1;
         let item_totals = match item_type {
